@@ -35,3 +35,9 @@ img, video { max-width: 100%; height: auto; }
 }
 .swal2-slide-up-show { animation: swal2-slide-up 0.28s ease-out both; }
 .swal2-slide-up-hide { animation: swal2-slide-down 0.2s ease-in both; }
+
+@theme {
+  --breakpoint-xs: 20rem;
+  --breakpoint-2xl: 100rem;
+  --breakpoint-3xl: 120rem;
+}

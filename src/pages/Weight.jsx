@@ -11,26 +11,26 @@ const Weight = () => {
 
   useEffect(() => {
     setData([
-      { name: "วันที่ 1", weight: 60, weightLost: 10+"%" },
-      { name: "วันที่ 2", weight: 70, weightLost: 10+"%"  },
-      { name: "วันที่ 3", weight: 45, weightLost: 10+"%"  },
-      { name: "วันที่ 4", weight: 85, weightLost: 10+"%"  },
-      { name: "วันที่ 5", weight: 65, weightLost: 10+"%"  },
-      { name: "วันที่ 6", weight: 60, weightLost: 10+"%" },
-      { name: "วันที่ 7", weight: 70, weightLost: 10+"%"  },
-      { name: "วันที่ 8", weight: 45, weightLost: 10+"%"  },
-      { name: "วันที่ 9", weight: 85, weightLost: 10+"%"  },
-      { name: "วันที่ 10", weight: 65, weightLost: 10+"%"  },
-      { name: "วันที่ 11", weight: 60, weightLost: 10+"%" },
-      { name: "วันที่ 12", weight: 70, weightLost: 10+"%"  },
-      { name: "วันที่ 13", weight: 45, weightLost: 10+"%"  },
-      { name: "วันที่ 14", weight: 85, weightLost: 10+"%"  },
+      { name: "วันที่ 1", weight: 3200, weightLost: 10+"%" },
+      { name: "วันที่ 2", weight: 3200, weightLost: 10+"%"  },
+      { name: "วันที่ 3", weight: 3300, weightLost: 10+"%"  },
+      { name: "วันที่ 4", weight: 3400, weightLost: 10+"%"  },
+      { name: "วันที่ 5", weight: 3500, weightLost: 10+"%"  },
+      { name: "วันที่ 6", weight: 3600, weightLost: 10+"%" },
+      { name: "วันที่ 7", weight: 3700, weightLost: 10+"%"  },
+      { name: "วันที่ 8", weight: 3800, weightLost: 10+"%"  },
+      { name: "วันที่ 9", weight: 3900, weightLost: 10+"%"  },
+      { name: "วันที่ 10", weight: 4000, weightLost: 10+"%"  },
+      { name: "วันที่ 11", weight: 3900, weightLost: 10+"%" },
+      { name: "วันที่ 12", weight: 4000, weightLost: 10+"%"  },
+      { name: "วันที่ 13", weight: 4020, weightLost: 10+"%"  },
+      { name: "วันที่ 14", weight: 3980, weightLost: 10+"%"  },
 
     ]);
   }, []);
 
   const onWeightClick = async () => {
-    const result = await weightAlert({ title: "น้ำหนักทารก", birthWeight, lockBirth: true });
+    const result = await weightAlert({ title: "น้ำหนักทารก (กรัม)", birthWeight, lockBirth: true });
     if (result) {
       success(`Saved weight\nBirth: ${birthWeight} g\nCurrent: ${result.currentWeight} g`);
     }
@@ -44,11 +44,11 @@ const Weight = () => {
         เพิ่มน้ำหนักทารก
       </button>
       <BabyTable
-        columns={["วันที่", "น้ำหนัก", "น้ำหนักที่ลด(%)"]}
+        columns={["วันที่", "น้ำหนักทารก (กรัม)", "น้ำหนักที่ลด(%)"]}
         data={data}
       />
       <div className="w-full text-sm text-gray-600">
-        Birth weight (mock): {birthWeight} g
+        น้ำหนักแรกเกิด: {birthWeight} g
       </div>
 
       <PinkGraph

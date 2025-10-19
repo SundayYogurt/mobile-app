@@ -1,46 +1,45 @@
-import api from "./api"; // <— axios instance มี interceptor token, header ฯลฯ
+import api from "./api";
+import TokenService from "./TokenService";
 
-const API_URL =
-  import.meta.env.VITE_ANNOUNCE_API ||
-  "https://condo-swift.onrender.com/api/v1/announces";
+const API_URL = import.meta.env.VITE_AUTH_API;
 
-// 🏗 CRUD หลัก
-const createAnnounce = async (Announce) => api.post(`${API_URL}/addAnnounce`, Announce);
-const getAllAnnounce = async () => api.get(`${API_URL}/`);
-const updateAnnounce = async (id, Announce) => api.put(`${API_URL}/${id}`, Announce);
-const getAnnounceById = async (id) => api.get(`${API_URL}/${id}`);
-const deleteAnnounce = async (id) => api.delete(`${API_URL}/${id}`);
+const register = async (usernameOrPayload, name, email, password) => {
+  const payload =
+    typeof usernameOrPayload === "object" && usernameOrPayload !== null
+      ? usernameOrPayload
+      : { username: usernameOrPayload, name, email, password };
+  return await api.post(API_URL + "/register", payload);
+};
 
-// 🔍 Announce Detail
-const showAnnounceDetail = async (id) => api.get(`${API_URL}/showAnnounceDetails/${id}`);
 
-// 📦 รวม category ทั้งหมด
-const getAnnounceWithCategory = async () => api.get(`${API_URL}/showAnnounceWithCategory`);
 
-// 🧠 ฟังก์ชันใหม่ — สำหรับหน้า /filter
-const getFilterAnnounceWithAgent = async (arg1, arg2, arg3, arg4) => {
-  if (typeof arg1 === 'object' && arg1 !== null) {
-    const { keyword, filter, type, bedroomCount, minPrice, maxPrice, page = 0, size = 8 } = arg1;
-    const params = { keyword, type: type ?? filter, bedroomCount, minPrice, maxPrice, page, size };
-    return await api.get(`${API_URL}/filterAnnounceWithAgent`, { params });
+const login = async (email, password) => {
+    console.log("🧾 Payload before login:", { email, password });
+    console.log("🧾 Payload before login:", { email, password });
+  const response = await api.post(`${API_URL}/login`, { email, password }, { withCredentials: false });
+  console.log("🟢 Login response:", response.data);
+
+
+  // ✅ ตรวจว่า backend ส่ง accessToken กลับมาจริงไหม
+  const { accessToken, tokenType, userId } = response.data;
+
+  if (!accessToken) {
+    throw new Error("ไม่พบ accessToken จาก backend");
   }
-  const keyword = arg1;
-  const filter = arg2;
-  const page = arg3 ?? 0;
-  const size = arg4 ?? 8;
-  return await api.get(`${API_URL}/filterAnnounceWithAgent`, { params: { keyword, type: filter, page, size } });
+
+  // ✅ เก็บ token ใน cookie ผ่าน TokenService
+  TokenService.setUser({
+    accessToken,
+    tokenType,
+    userId,
+  });
+
+  return response;
 };
 
-// ✅ export ฟังก์ชันทั้งหมดไว้ให้เรียกง่าย
-const AnnounceService = {
-  getAllAnnounce,
-  deleteAnnounce,
-  createAnnounce,
-  updateAnnounce,
-  getAnnounceById,
-  showAnnounceDetail,
-  getAnnounceWithCategory,
-  getFilterAnnounceWithAgent,
+const logout = () => {
+  TokenService.removeUser();
 };
 
-export default AnnounceService;
+const AuthService = { register, login, logout };
+export default AuthService;

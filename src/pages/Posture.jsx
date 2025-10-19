@@ -8,7 +8,7 @@ export const Posture = () => {
           <div className=" relative w-full flex justify-center items-center">
             <img
               className="absolute right-[-20px] w-[70px] h-[70px] rotate-[15deg]"
-              src="/src/assets/knowledge/hearth.png"
+              src="/assets/knowledge/hearth.png"
               alt="heart"
             />
             <button className="btn rounded-xl bg-[#CB6CE670] w-full h-[70px] text-[26px] font-medium">
@@ -20,8 +20,8 @@ export const Posture = () => {
           </div>
             <button className='btn rounded-xl text-xl font-light bg-[#FF66C457]'>ท่านวดเต้านมด้วยตนเอง</button>
 
-            <img src='/src/assets/milk/milk.jpg'></img>
-            <img src='/src/assets/milk/milk2.jpg'></img>
+            <img src='/assets/milk/milk.jpg'></img>
+            <img src='/assets/milk/milk2.jpg'></img>
           </div>
  
         </>

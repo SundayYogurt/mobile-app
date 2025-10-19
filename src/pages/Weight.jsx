@@ -59,7 +59,7 @@ const Weight = () => {
       <h1>น้ำหนักอยู่ในเกณฑ์ที่ดีมาก</h1>
       <p></p>
       <div>
-        <img src="/src/assets/weight/weight.jpg"></img>
+        <img src="/assets/weight/weight.jpg"></img>
       </div>
     </div>
   );

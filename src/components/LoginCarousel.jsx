@@ -13,7 +13,7 @@ export default function LoginCarousel() {
       title: "เลื่อนเพื่อลงทะเบียน",
       button: "เข้าสู่ระบบ",
       color: "bg-[#FAF7F9]",
-      icon: "/src/assets/home/baby.png",
+      icon: "/assets/home/baby.png",
       onClick: async () => {
         const creds = await loginAlert();
         if (creds) {
@@ -27,7 +27,7 @@ export default function LoginCarousel() {
       title: "ลงทะเบียน",
       button: "เริ่มลงทะเบียน",
       color: "bg-[#FAF7F9]",
-      icon: "/src/assets/home/baby.png",
+      icon: "/assets/home/baby.png",
       onClick: async () => {
         const payload = await registerAlert();
         if (payload) {
@@ -41,7 +41,7 @@ export default function LoginCarousel() {
       title: "เพิ่มลูกน้อยใหม่",
       button: "ลงทะเบียนลูกน้อย",
       color: "bg-[#FAF7F9]",
-      icon: "/src/assets/home/baby.png",
+      icon: "/assets/home/baby.png",
       onClick: () => info("เพิ่มลูกใหม่!"),
     },
   ];

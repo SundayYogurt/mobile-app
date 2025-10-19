@@ -7,11 +7,11 @@ const Food = () => {
         <div className="relative">
           <img
             className="absolute w-[91px] h-[91px] -rotate-20 -mt-20"
-            src="/src/assets/knowledge/list.png"
+            src="/assets/knowledge/list.png"
           ></img>
           <img
             className="absolute w-[91px] h-[91px] rotate-20 -mt-18 right-1"
-            src="/src/assets/knowledge/salad.png"
+            src="/assets/knowledge/salad.png"
           ></img>
           <button className="btn rounded-xl bg-[#ff66c450] w-full h-[70px] text-[30px] font-medium justify-center items-center">
             อาหารสำหรับ มารดาหลังคลอด{" "}
@@ -20,7 +20,7 @@ const Food = () => {
           <div className="relative mt-5">
             <img
               className="absolute w-[88px] h-[88px] -rotate-15 mt-18 right-1"
-              src="/src/assets/food/maternity.png"
+              src="/assets/food/maternity.png"
             ></img>
             <div
               role="button"
@@ -47,7 +47,7 @@ const Food = () => {
           >
             <img
               className="absolute w-[66px] h-[66px] mt-25 -right-1"
-              src="/src/assets/food/pumpkin.png"
+              src="/assets/food/pumpkin.png"
             ></img>
             <div className="space-y-2">
               {" "}
@@ -65,7 +65,7 @@ const Food = () => {
           >
             <img
               className="absolute w-[97px] h-[97px]  -left-1"
-              src="/src/assets/food/chives.png"
+              src="/assets/food/chives.png"
             ></img>
             <div className="space-y-2">
               {" "}
@@ -81,7 +81,7 @@ const Food = () => {
           >
             <img
               className="absolute w-[97px] h-[97px]  -right-1"
-              src="/src/assets/food/papaya.png"
+              src="/assets/food/papaya.png"
             ></img>
             <div className="space-y-2">
               {" "}
@@ -97,7 +97,7 @@ const Food = () => {
           >
             <img
               className="absolute w-[97px] h-[97px] -mt-25 -left-1"
-              src="/src/assets/food/banana.png"
+              src="/assets/food/banana.png"
             ></img>
             <div className="space-y-2">
               {" "}
@@ -115,7 +115,7 @@ const Food = () => {
           >
             <img
               className="absolute w-[97px] h-[97px] -mt-25 -right-1"
-              src="/src/assets/food/ginger.png"
+              src="/assets/food/ginger.png"
             ></img>
             <div className="space-y-2">
               {" "}
@@ -133,7 +133,7 @@ const Food = () => {
           >
             <img
               className="absolute w-[97px] h-[97px] -mt-25 -left-1"
-              src="/src/assets/food/basil.png"
+              src="/assets/food/basil.png"
             ></img>
             <div className="space-y-2">
               {" "}
@@ -151,7 +151,7 @@ const Food = () => {
           >
             <img
               className="absolute w-[97px] h-[97px] -mt-25 -right-1"
-              src="/src/assets/food/bail2.png"
+              src="/assets/food/bail2.png"
             ></img>
             <div className="space-y-2">
               {" "}

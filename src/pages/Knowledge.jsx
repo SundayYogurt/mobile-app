@@ -11,12 +11,12 @@ const Knowledge = () => {
           <div className="relative w-full flex justify-center items-center">
             <img
               className="absolute left-[-25px] w-[80px] h-[80px] rotate-[-15deg] -mt-4"
-              src="/src/assets/knowledge/list.png"
+              src="/assets/knowledge/list.png"
               alt="list"
             />
             <img
               className="absolute right-[-25px] w-[80px] h-[80px] rotate-[15deg] -mt-4"
-              src="/src/assets/knowledge/salad.png"
+              src="/assets/knowledge/salad.png"
               alt="salad"
             />
             <button className="btn rounded-xl bg-[#ff66c450] w-full h-[70px] text-[26px] font-medium">
@@ -30,7 +30,7 @@ const Knowledge = () => {
           <div className="relative w-full flex justify-center items-center">
             <img
               className="absolute right-[-25px] w-[80px] h-[80px] rotate-[15deg]"
-              src="/src/assets/knowledge/baby.png"
+              src="/assets/knowledge/baby.png"
               alt="baby"
             />
             <button className="btn rounded-xl bg-[#E2A9F175] w-full h-[70px] text-[26px] font-medium">
@@ -44,7 +44,7 @@ const Knowledge = () => {
           <div className="relative w-full flex justify-center items-center">
             <img
               className="absolute left-[-25px] w-[80px] h-[80px] rotate-[-15deg]"
-              src="/src/assets/knowledge/mom.png"
+              src="/assets/knowledge/mom.png"
               alt="mom"
             />
             <button className="btn rounded-xl bg-[#FF66C450] w-full h-[70px] text-[26px] font-medium">
@@ -58,7 +58,7 @@ const Knowledge = () => {
           <div className="relative w-full flex justify-center items-center">
             <img
               className="absolute right-[-20px] w-[70px] h-[70px] rotate-[15deg]"
-              src="/src/assets/knowledge/hearth.png"
+              src="/assets/knowledge/hearth.png"
               alt="heart"
             />
             <button className="btn rounded-xl bg-[#CB6CE670] w-full h-[70px] text-[26px] font-medium">

@@ -15,7 +15,7 @@ export const Home = () => {
         <Link to="/save" className="w-full">
           <div className="relative w-full flex justify-center items-center">
             <img
-              src="/src/assets/home/save.png"
+              src="/assets/home/save.png"
               className="absolute left-[-20px] w-[80px] h-[80px] rotate-[-15deg]"
               alt="save icon"
             />
@@ -29,7 +29,7 @@ export const Home = () => {
         <Link to="/baby-health" className="w-full">
           <div className="relative w-full flex justify-center items-center">
             <img
-              src="/src/assets/home/heath.png"
+              src="/assets/home/heath.png"
               className="absolute right-[-20px] w-[80px] h-[80px] rotate-[15deg]"
               alt="health icon"
             />
@@ -43,7 +43,7 @@ export const Home = () => {
         <Link to="/knowledge" className="w-full">
           <div className="relative w-full flex justify-center items-center">
             <img
-              src="/src/assets/home/knowledge.png"
+              src="/assets/home/knowledge.png"
               className="absolute left-[-20px] w-[80px] h-[80px] rotate-[-15deg]"
               alt="knowledge icon"
             />
@@ -57,7 +57,7 @@ export const Home = () => {
         <Link to="/contact" className="w-full">
           <div className="relative w-full flex justify-center items-center">
             <img
-              src="/src/assets/home/contact.png"
+              src="/assets/home/contact.png"
               className="absolute right-[-20px] w-[70px] h-[70px] rotate-[15deg]"
               alt="contact icon"
             />

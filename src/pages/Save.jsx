@@ -55,7 +55,7 @@ export const Save = () => {
           </div>
           <div className="rounded-full bg-[#E2A9F1] w-[200px] h-[200px] flex items-center justify-center mt-15 ">
             <img
-              src="/src/assets/save/breastfeeding.png"
+              src="/assets/save/breastfeeding.png"
               className="w-[144px] h-[144px]"
             />
           </div>

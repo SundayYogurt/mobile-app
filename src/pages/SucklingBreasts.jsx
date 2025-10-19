@@ -51,7 +51,7 @@ useEffect(() => {
       <h1>การดูดนมอยู่ในเกณฑ์ที่ดีมาก</h1>
       <p></p>
       <div>
-        <img src="/src/assets/weight/milk.jpg"></img>
+        <img src="/assets/weight/milk.jpg"></img>
       </div>
     </div>
   );

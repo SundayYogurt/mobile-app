@@ -43,4 +43,14 @@ export default defineConfig({
     tailwindcss(),
     copyAssetsPlugin(),
   ],
+  server: {
+    proxy: {
+      // Proxy API calls during development to avoid CORS/preflight issues
+      '/api': {
+        target: 'https://mom-sure-api.onrender.com',
+        changeOrigin: true,
+        secure: true,
+      },
+    },
+  },
 });

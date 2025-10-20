@@ -2,7 +2,7 @@ import React from 'react'
 
 const Contact = () => {
   return (
-    <div className='flex flex-col justify-center items-center relative mt-30'>
+    <div className='flex flex-col justify-center items-center relative mt-30 xs:mt-5'>
       <h1 className='text-4xl' >ติดต่อเรา</h1>
     <img src="https://qr-official.line.me/gs/M_860tjxuh_BW.png?oat_content=qr" />
 <a href="line://ti/p/@860tjxuh" target="_blank">

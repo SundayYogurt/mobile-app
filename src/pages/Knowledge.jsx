@@ -4,7 +4,7 @@ import { Link } from "react-router";
 const Knowledge = () => {
   return (
     <>
-      <div className="w-full flex flex-col items-center justify-center mt-50 relative z-10 gap-6 px-6 max-w-[440px] mx-auto">
+      <div className="w-full flex flex-col items-center justify-center mt-50 xs:mt-20 relative z-10 gap-6 px-6 max-w-[440px] mx-auto">
         
         {/* ปุ่ม: อาหารสำหรับมารดาหลังคลอด */}
         <Link to="/food" className="w-full">

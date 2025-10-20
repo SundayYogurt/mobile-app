@@ -1,0 +1,61 @@
+import React, { useEffect, useMemo, useState } from "react";
+import PinkGraph from "../components/PinkGraph";
+import { weightAlert } from "../utils/weightAlert";
+import { info, success } from "../utils/alert";
+import BabyTable from "../components/BabyTable";
+import { useAuthContext } from "../context/AuthContext";
+import SelectedBabyService from "../services/SelectedBabyService";
+import BabyService from "../services/BabyService";
+import Swal from "sweetalert2";
+const Weight = () => {
+  const { user } = useAuthContext();
+  const [rows, setRows] = useState([]); // [{id, date, weight}]
+  const [weight, setWeight] = useState([]);
+  const uid = useMemo(() => user?.userId ?? user?.id ?? user?.sub, [user]);
+  const selected = useMemo(
+    () => (uid ? SelectedBabyService.get(uid) : null),
+    [uid]
+  );
+
+  const [birthWeight, setBirthWeight] = useState();
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await BabyService.showBabyWeightLogs(selected?.id);
+
+        setWeight(response.status === 200 ? response.data : []);
+      } catch (error) {
+        Swal.fire({
+          icon: "error",
+          title: "เกิดข้อผิดพลาดในการเชื่อมต่อ",
+          text:
+            error.response?.data?.message ||
+            error.message ||
+            "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้",
+          confirmButtonText: "ตกลง",
+        });
+      }
+    };
+
+    fetchData();
+  } ,[]);
+
+
+  const labeledData = useMemo(() => {
+    const sorted = rows
+      .slice()
+      .sort((a, b) => new Date(a.date) - new Date(b.date));
+    return sorted.map((r, i) => ({ name: `วัน ${i + 1}`, weight: r.weight }));
+  }, [rows]);
+
+  const tableData = useMemo(() => {
+    const sorted = rows
+      .slice()
+      .sort((a, b) => new Date(a.date) - new Date(b.date));
+    return sorted.map((r, i) => {
+      const base = {
+        วัน: `วัน ${i + 1}`,
+        "น้ำหนัก (g)": r.weight,
+
+

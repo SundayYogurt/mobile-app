@@ -10,25 +10,39 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(getUser);
 
   // ✅ ฟังก์ชัน login ใช้เวลามาจาก popup หรือหน้า Login
-  const login = async (email, password) => {
+  const login = async (username, password) => {
     try {
-      const response = await AuthService.login(email, password);
+      const response = await AuthService.login(username, password);
 
-      // ถ้า backend ส่ง token กลับมา
-      const token = response.data?.accessToken;
+      // ถ้า backend ส่ง token กลับมา (รองรับหลายคีย์)
+      const token = response.data?.accessToken || response.data?.Token || response.data?.token;
       if (!token) throw new Error("No token returned from server");
 
-      // เก็บ token ลง cookie
-      Cookies.set("token", token, { expires: 7, secure: true, sameSite: "strict" });
+      // เก็บ token ลง cookie (ปิด secure ใน dev บน http)
+      const isProd = typeof window !== "undefined" && window.location.protocol === "https:";
+      Cookies.set("token", token, { expires: 7, secure: isProd, sameSite: "strict" });
 
-      // decode token เพื่อดึง userId/email
+      // decode token เพื่อดึง userId/username
       const decoded = jwtDecode(token);
       console.log("🔑 Decoded token:", decoded);
 
-      setUser({ ...decoded, token });
-      TokenService.setUser(decoded);
+      // รวมข้อมูลโปรไฟล์จาก response (เผื่อ JWT ไม่มี username/name)
+      const respUser = response.data?.user || response.data || {};
+      const mergedUser = {
+        ...decoded,
+        token,
+        username: decoded?.username || respUser?.username || respUser?.name || undefined,
+        name: decoded?.name || respUser?.name || undefined,
+        email: decoded?.email || decoded?.sub || respUser?.email || undefined,
+        userId: decoded?.userId || decoded?.id || respUser?.userId || respUser?.id,
+        lat: decoded?.lat || decoded?.latitude || respUser?.lat || respUser?.latitude,
+        lng: decoded?.lng || decoded?.longitude || respUser?.lng || respUser?.longitude,
+      };
 
-      return decoded;
+      setUser(mergedUser);
+      TokenService.setUser(mergedUser);
+
+      return mergedUser;
     } catch (error) {
       console.error("Login error:", error);
       throw error;

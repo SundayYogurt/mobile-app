@@ -18,6 +18,8 @@ export default function VideoPlayer({ src, poster }) {
   const [muted, setMuted] = useState(false);
   const [volume, setVolume] = useState(1);
   const [rate, setRate] = useState(1);
+  const [showUi, setShowUi] = useState(false);
+  const hideTimerRef = useRef(null);
 
   useEffect(() => {
     const v = videoRef.current;
@@ -38,6 +40,18 @@ export default function VideoPlayer({ src, poster }) {
   const togglePlay = () => {
     const v = videoRef.current; if (!v) return;
     if (v.paused) { v.play(); setPlaying(true); } else { v.pause(); setPlaying(false); }
+  };
+
+  const toggleMobileUi = () => {
+    // Show/hide controls on tap for small screens; md+ uses hover via CSS
+    setShowUi((prev) => {
+      const next = !prev;
+      try { if (hideTimerRef.current) clearTimeout(hideTimerRef.current); } catch {}
+      if (next) {
+        hideTimerRef.current = setTimeout(() => setShowUi(false), 3000);
+      }
+      return next;
+    });
   };
 
   const seek = (t) => {
@@ -83,16 +97,20 @@ export default function VideoPlayer({ src, poster }) {
   };
 
   return (
-    <div ref={containerRef} className="relative w-full max-w-[500px] mt-5">
+    <div ref={containerRef} className="relative w-full max-w-[500px] mt-5 group">
       <video
         ref={videoRef}
         src={src}
         poster={poster}
         className="rounded-xl shadow-md w-full"
         playsInline
+        onClick={toggleMobileUi}
+        onTouchStart={toggleMobileUi}
       />
 
-      <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/60 to-transparent rounded-b-xl">
+      <div
+        className={`absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/60 to-transparent rounded-b-xl transition-opacity duration-200 ${showUi ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'} md:opacity-0 md:group-hover:opacity-100 md:pointer-events-none md:group-hover:pointer-events-auto`}
+      >
         <input
           type="range"
           min={0}
@@ -132,4 +150,3 @@ export default function VideoPlayer({ src, poster }) {
     </div>
   )
 }
-

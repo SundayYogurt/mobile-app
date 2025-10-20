@@ -25,6 +25,8 @@ export async function countPerDayAlert({
     cancelButtonText: cancelText,
     confirmButtonColor: "#F5D8EB",
     reverseButtons: true,
+    showCloseButton: true,
+    allowEscapeKey: true,
     allowOutsideClick: () => !Swal.isLoading(),
     didOpen: () => {
       const titleEl = Swal.getTitle();

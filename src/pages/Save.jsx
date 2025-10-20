@@ -150,10 +150,10 @@ export const Save = () => {
           </button>
         </div>
 
-        <div className="absolute -mt-170 mr-150 text-3xl text-[#e3a9f1d7]">close</div>
-        <div className="absolute -mt-30 mr-150 text-3xl text-[#e3a9f1d7]">face</div>
-        <div className="absolute -mt-170 -mr-150 text-3xl text-[#e3a9f1d7]">straight</div>
-        <div className="absolute -mt-30 -mr-150 text-3xl text-[#e3a9f1d7]">support</div>
+        <div className="absolute -mt-170 mr-150 text-3xl text-[#e3a9f1d7] xs:absolute xs:-mt-145 xs:mr-50 xs:text-3xl xs:text-[#e3a9f1d7]">close</div>
+        <div className="absolute -mt-30 mr-150 text-3xl text-[#e3a9f1d7] xs:absolute xs:-mt-35 xs:mr-50 xs:text-3xl xs:text-[#e3a9f1d7]">face</div>
+        <div className="absolute -mt-170 -mr-150 text-3xl text-[#e3a9f1d7xs:absolute xs:-mt-145 xs:-ml-90 xs:text-3xl xs:text-[#e3a9f1d7]">straight</div>
+        <div className="absolute -mt-30 -mr-150 text-3xl text-[#e3a9f1d7 xs:absolute xs:-mt-35 xs:-ml-90 xs:text-3xl xs:text-[#e3a9f1d7]">support</div>
 
         <div className="rounded-full bg-[#E2A9F1] w-[200px] h-[200px] flex items-center justify-center mt-4">
           <img src="/src/assets/save/breastfeeding.png" className="w-[144px] h-[144px]" />

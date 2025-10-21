@@ -85,11 +85,11 @@ const Food = () => {
 
         <div className="relative">
           <img
-            className="absolute w-[91px] h-[91px] -rotate-20 -mt-20"
+            className="absolute w-[91px] h-[91px]  -rotate-20 -mt-20 xs:w-[71px] xs:h-[71px]"
             src="/src/assets/knowledge/list.png"
           ></img>
           <img
-            className="absolute w-[91px] h-[91px] rotate-20 -mt-18 right-1"
+            className="absolute w-[91px] h-[91px] rotate-20 -mt-18 right-1 xs:w-[71px] xs:h-[71px]"
             src="/src/assets/knowledge/salad.png"
           ></img>
           <button className="btn rounded-xl bg-[#ff66c450] w-full h-[70px] text-[30px] font-medium justify-center items-center">
@@ -125,7 +125,7 @@ const Food = () => {
             className="btn rounded-xl bg-white shadow-xl w-full text-center font-medium normal-case h-auto min-h-[70px] p-4 whitespace-normal mt-10 "
           >
             <img
-              className="absolute w-[66px] h-[66px] mt-25 -right-1"
+              className="absolute w-[66px] h-[66px] mt-25 -right-1 xs:w-[51px] xs:h-[51px]"
               src="/src/assets/food/pumpkin.png"
             ></img>
             <div className="space-y-2">

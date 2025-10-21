@@ -2,7 +2,27 @@ import axios from "axios";
 import TokenService from "./TokenService";
 import Cookies from "js-cookie"; // ✅ ต้อง import
 
-const baseURL = import.meta.env.VITE_BASE_URL;
+const resolveBaseURL = () => {
+  const envBase = (import.meta.env.VITE_BASE_URL || "").trim();
+  if (!envBase) return "";
+
+  if (!/^https?:/i.test(envBase)) return envBase;
+
+  if (typeof window === "undefined") return envBase;
+
+  try {
+    const envOrigin = new URL(envBase).origin;
+    if (envOrigin === window.location.origin) {
+      return envBase;
+    }
+  } catch (err) {
+    console.warn("[api] Invalid VITE_BASE_URL", err);
+  }
+
+  return "";
+};
+
+const baseURL = resolveBaseURL();
 
 const api = axios.create({
   baseURL,

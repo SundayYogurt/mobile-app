@@ -10,7 +10,6 @@ import BabyService from "../services/BabyService";
 export const Poop = () => {
   const { user } = useAuthContext();
   const [rows, setRows] = useState([]); // [{ id, date, count }]
-  const [weightWarning, setWeightWarning] = useState({ show: false, level: "", percent: 0 });
   const [poopWarning, setPoopWarning] = useState(false);
 
   const uid = useMemo(() => user?.userId ?? user?.id ?? user?.sub, [user]);
@@ -129,28 +128,6 @@ export const Poop = () => {
       else setPoopWarning(false);
 
       // ⚖️ ตรวจน้ำหนักล่าสุด
-      try {
-        const weightRes = await BabyService.showBabyWeightLogs(selected.id);
-        const wraw = Array.isArray(weightRes?.data)
-          ? weightRes.data
-          : Array.isArray(weightRes?.data?.data)
-          ? weightRes.data.data
-          : Array.isArray(weightRes?.data?.response)
-          ? weightRes.data.response
-          : [];
-        if (wraw.length > 0 && baby.birthWeight) {
-          const last = wraw[wraw.length - 1];
-          const current = Number(last?.currentWeight ?? last?.weight ?? 0);
-          const pct = ((baby.birthWeight - current) / baby.birthWeight) * 100;
-          if (pct >= 7)
-            setWeightWarning({ show: true, level: "sev", percent: pct.toFixed(1) });
-          else if (pct >= 5)
-            setWeightWarning({ show: true, level: "mod", percent: pct.toFixed(1) });
-          else setWeightWarning({ show: false, level: "", percent: 0 });
-        }
-      } catch (err) {
-        console.warn("weight check failed:", err);
-      }
     };
 
     checkWarnings();
@@ -160,38 +137,16 @@ export const Poop = () => {
     <div className="w-full flex flex-col items-center justify-center mt-10 relative z-10 gap-6 px-6 max-w-[440px] mx-auto">
 
       {/* ✅ กล่องแจ้งเตือนสุขภาพ */}
-      {(poopWarning || weightWarning.show) && (
+      {poopWarning && (
         <div className="w-full max-w-[640px] mx-auto px-4">
-          <div className="text-[#6C3B73] text-sm font-semibold mb-2">แจ้งเตือน</div>
-
-          {poopWarning && (
-            <div className="rounded-lg border border-pink-200 bg-pink-50 px-4 py-3 text-sm text-[#6C3B73] shadow-sm mb-2">
-              <strong className="font-semibold">คำแนะนำสุขภาพทารก: </strong>
-              ครบ 24 ชั่วโมงหลังคลอดแล้วยังไม่ถ่ายอุจจาระ
-              กรุณาติดต่อเจ้าหน้าที่สาธารณสุขหรือสถานพยาบาลใกล้บ้านเพื่อรับคำแนะนำเพิ่มเติมค่ะ
-            </div>
-          )}
-
-          {weightWarning.show && (
-            <div
-              className={`rounded-lg px-4 py-3 text-sm shadow-sm mb-2 ${
-                weightWarning.level === "sev"
-                  ? "border-red-200 bg-red-50 text-red-700"
-                  : "border-amber-200 bg-amber-50 text-amber-700"
-              }`}
-            >
-              <strong className="font-semibold">น้ำหนักทารก: </strong>
-              {weightWarning.level === "sev"
-                ? "น้ำหนักลด ≥ 7% แนะนำพบทันทีที่สถานพยาบาล/พบแพทย์"
-                : "น้ำหนักลด ≥ 5% แนะนำกระตุ้นการดูดนมทุก 2 ชั่วโมง และติดตามใกล้ชิด"}
-              {typeof weightWarning.percent === "number" && (
-                <span> (ลด {weightWarning.percent}%)</span>
-              )}
-            </div>
-          )}
+          <div className="text-[#6C3B73] text-sm font-semibold mb-2">คำเตือนสำหรับทารก</div>
+          <div className="rounded-lg border border-pink-200 bg-pink-50 px-4 py-3 text-sm text-[#6C3B73] shadow-sm mb-2">
+            <strong className="font-semibold">อุจจาระทารก: </strong>
+            หากภายใน 24 ชั่วโมงแรกหลังคลอดยังไม่มีการถ่ายควรรีบปรึกษาแพทย์หรือพยาบาลเพื่อประเมินอาการ
+            และติดตามอาการอื่น ๆ ของทารกอย่างใกล้ชิด
+          </div>
         </div>
       )}
-
       {/* ✅ ปุ่มและตาราง */}
       <button
         onClick={async () => {

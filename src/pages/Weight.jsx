@@ -12,6 +12,7 @@ const Weight = () => {
   const { user } = useAuthContext();
   const [rows, setRows] = useState([]); // [{id, date, weight}]
   const [weight, setWeight] = useState([]);
+  const [weightWarning, setWeightWarning] = useState({ show: false, level: "", percent: 0 });
   const uid = useMemo(() => user?.userId ?? user?.id ?? user?.sub, [user]);
   const selected = useMemo(() => (uid ? SelectedBabyService.get(uid) : null), [uid]);
   const [birthWeight, setBirthWeight] = useState();
@@ -184,6 +185,36 @@ const Weight = () => {
     run();
   }, [uid, selected?.id]);
 
+  useEffect(() => {
+    if (!rows.length) {
+      setWeightWarning({ show: false, level: "", percent: 0 });
+      return;
+    }
+
+    const numericBirth = Number(birthWeight);
+    if (!Number.isFinite(numericBirth) || numericBirth <= 0) {
+      setWeightWarning({ show: false, level: "", percent: 0 });
+      return;
+    }
+
+    const sorted = rows.slice().sort((a, b) => new Date(a.date) - new Date(b.date));
+    const latest = sorted[sorted.length - 1];
+    const current = Number(latest?.weight);
+    if (!Number.isFinite(current) || current <= 0) {
+      setWeightWarning({ show: false, level: "", percent: 0 });
+      return;
+    }
+
+    const pct = ((numericBirth - current) / numericBirth) * 100;
+    if (pct >= 7) {
+      setWeightWarning({ show: true, level: "sev", percent: Number(pct.toFixed(1)) });
+    } else if (pct >= 5) {
+      setWeightWarning({ show: true, level: "mod", percent: Number(pct.toFixed(1)) });
+    } else {
+      setWeightWarning({ show: false, level: "", percent: 0 });
+    }
+  }, [birthWeight, rows]);
+
   const onWeightClick = async () => {
     if (!uid || !selected?.id) {
       info("กรุณาเลือกเด็กก่อนทำรายการ");
@@ -215,6 +246,27 @@ const Weight = () => {
 
   return (
     <div className="w-full flex flex-col items-center justify-center mt-10 relative z-10 gap-6 px-6 max-w-[440px] mx-auto">
+      {weightWarning.show && (
+        <div className="w-full max-w-[640px] mx-auto px-4">
+          <div className="text-[#6C3B73] text-sm font-semibold mb-2">คำเตือนสำคัญ</div>
+          <div
+            className={`rounded-lg px-4 py-3 text-sm shadow-sm mb-2 ${
+              weightWarning.level === "sev"
+                ? "border-red-200 bg-red-50 text-red-700"
+                : "border-amber-200 bg-amber-50 text-amber-700"
+            }`}
+          >
+            <strong className="font-semibold">น้ำหนักทารก: </strong>
+            {weightWarning.level === "sev"
+              ? "น้ำหนักลด ≥ 7% แนะนำพบทันทีที่สถานพยาบาล/พบแพทย์"
+              : "น้ำหนักลด ≥ 5% แนะนำกระตุ้นการดูดนมทุก 2 ชั่วโมง และติดตามใกล้ชิด"}
+            {typeof weightWarning.percent === "number" && weightWarning.percent > 0 && (
+              <span> (ลด {weightWarning.percent}%)</span>
+            )}
+          </div>
+        </div>
+      )}
+
       <button
         onClick={onWeightClick}
         className="btn rounded-xl bg-[#F5D8EB] text-xl font-light w-full"

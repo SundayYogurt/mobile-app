@@ -17,6 +17,8 @@ export const Save = () => {
   const [sessionCount, setSessionCount] = useState(0); // จำนวนรอบใน session ปัจจุบัน
   const [baseCountToday, setBaseCountToday] = useState(0); // จำนวนครั้งที่บันทึกไว้ก่อนหน้าในวันนี้
   const [baseMinutesToday, setBaseMinutesToday] = useState(0); // เวลานาทีที่บันทึกไว้ก่อนหน้าในวันนี้
+  const [saving, setSaving] = useState(false); // กันกดซ้ำ
+
   const startAtRef = useRef(null);
 
   const uidMemo = useMemo(() => user?.userId ?? user?.id ?? user?.sub, [user]);
@@ -42,7 +44,7 @@ export const Save = () => {
     return `${y}-${m}-${day}`;
   };
 
-  // โหลดข้อมูลที่บันทึกไว้ของวันปัจจุบัน
+  // โหลดข้อมูลที่บันทึกไว้ของวันปัจจุบัน (จาก local history)
   useEffect(() => {
     if (!uidMemo || !selMemo?.id) return;
     const list = FeedingService.getHistory(uidMemo, selMemo.id);
@@ -92,22 +94,27 @@ export const Save = () => {
       await login(username, password);
       success("เข้าสู่ระบบสำเร็จ!");
       return true;
-    } catch (e) {
+    } catch {
       info("เข้าสู่ระบบไม่สำเร็จ กรุณาลองใหม่");
       return false;
     }
   };
 
   const handleSave = async () => {
+    if (saving) return; // กันกดซ้ำ
     const ok = await ensureLogin();
     if (!ok) return;
+
     if (running) {
       info("โปรดหยุดจับเวลาก่อนบันทึก");
       return;
     }
+
     const durationMinutes = Math.max(0, Math.round(sessionAccumulatedMs / 60000));
-    if (durationMinutes <= 0 && sessionCount <= 0) {
-      info("ยังไม่มีเวลาหรือจำนวนครั้งสำหรับวันนี้");
+
+    // บังคับส่งนาที > 0 เสมอ
+    if (durationMinutes <= 0) {
+      info("เวลารวมต้องมากกว่า 0 นาที");
       return;
     }
 
@@ -120,10 +127,12 @@ export const Save = () => {
     }
 
     try {
-      await BabyService.recordBabyFeeding(babyId, { durationMinutes, userId: uid });
-      success("บันทึกการให้นมสำเร็จ");
+      setSaving(true);
 
-      // รวมข้อมูลวันนี้กลับเข้า local history
+      // บันทึก “วันนี้”
+      await BabyService.recordBabyFeeding(babyId, { durationMinutes, userId: uid });
+
+      // อัปเดต local history
       const merged = FeedingService.mergeToday(uid, babyId, {
         date: todayKey(),
         addCount: sessionCount,
@@ -133,11 +142,15 @@ export const Save = () => {
       setBaseCountToday(Number(today?.count || 0));
       setBaseMinutesToday(Number(today?.minutes || 0));
 
+      success("บันทึกการให้นมสำเร็จ");
       resetTimer();
+      // ตรวจให้ตรงกับ route ของคุณ: "/suckingBreasts" vs "/sucklingBreasts"
       navigate("/suckingBreasts");
     } catch (e) {
       const msg = e?.response?.data?.message || e?.message || "";
       info(msg || "บันทึกไม่สำเร็จ");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -150,10 +163,7 @@ export const Save = () => {
           </button>
         </div>
 
-        <div className="absolute -mt-170 mr-150 text-3xl text-[#e3a9f1d7] xs:absolute xs:-mt-145 xs:mr-50 xs:text-3xl xs:text-[#e3a9f1d7]">close</div>
-        <div className="absolute -mt-30 mr-150 text-3xl text-[#e3a9f1d7] xs:absolute xs:-mt-35 xs:mr-50 xs:text-3xl xs:text-[#e3a9f1d7]">face</div>
-        <div className="absolute -mt-170 -mr-150 text-3xl text-[#e3a9f1d7xs:absolute xs:-mt-145 xs:-ml-90 xs:text-3xl xs:text-[#e3a9f1d7]">straight</div>
-        <div className="absolute -mt-30 -mr-150 text-3xl text-[#e3a9f1d7 xs:absolute xs:-mt-35 xs:-ml-90 xs:text-3xl xs:text-[#e3a9f1d7]">support</div>
+        {/* (ลบ element ที่ class แตกออก) */}
 
         <div className="rounded-full bg-[#E2A9F1] w-[200px] h-[200px] flex items-center justify-center mt-4">
           <img src="/src/assets/save/breastfeeding.png" className="w-[144px] h-[144px]" />
@@ -177,7 +187,7 @@ export const Save = () => {
           </div>
         </div>
 
-        {/* ✅ แสดงจำนวนครั้งและนาทีต่อวัน */}
+        {/* แสดงจำนวนครั้งและนาทีต่อวัน */}
         <div className="text-sm text-gray-600 mt-2">
           จำนวนครั้งวันนี้: {baseCountToday + sessionCount} ครั้ง, รวมเวลา:{" "}
           {Math.round((baseMinutesToday * 60000 + sessionAccumulatedMs) / 60000)} นาที
@@ -185,9 +195,12 @@ export const Save = () => {
 
         <button
           onClick={handleSave}
-          className="btn hover:bg-[#e3a9f1d7] text-[30px] font-light rounded-[20px] bg-[#EFB8FF] w-[400px] h-[50px] flex items-center justify-center mt-5 text-white"
+          disabled={saving}
+          className={`btn hover:bg-[#e3a9f1d7] text-[30px] font-light rounded-[20px] w-[400px] h-[50px] flex items-center justify-center mt-5 text-white ${
+            saving ? "bg-gray-400 cursor-not-allowed" : "bg-[#EFB8FF]"
+          }`}
         >
-          บันทึก
+          {saving ? "กำลังบันทึก..." : "บันทึก"}
         </button>
       </div>
     </>

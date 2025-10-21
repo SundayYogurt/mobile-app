@@ -92,7 +92,6 @@ export const Poop = () => {
         .filter((r) => r.count >= 0);
       setRows(mapped);
     } catch (e) {
-      console.error("load poop logs failed:", e);
     }
   };
 
@@ -172,7 +171,6 @@ export const Poop = () => {
               await loadLogs();
               success(`บันทึกสำเร็จ\nอุจจาระ: ${res.count} ครั้ง/วัน`);
             } catch (e) {
-              console.error(e);
               info("บันทึกไม่สำเร็จ");
             }
           }

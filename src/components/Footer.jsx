@@ -31,7 +31,6 @@ export const Footer = ({ visitorCount: visitorCountProp, onlineCount: onlineCoun
                   logout?.()
                   if (navigate) navigate('/')
                 } catch (err) {
-                  console.error('Logout failed:', err)
                 }
               }}
             >

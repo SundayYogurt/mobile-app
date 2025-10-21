@@ -13,7 +13,6 @@ const register = async (usernameOrPayload, name, password, confirmPassword) => {
     throw new Error("รหัสผ่านและยืนยันรหัสผ่านไม่ตรงกัน");
   }
 
-  console.log("🟢 register payload:", payload);
   const response = await api.post(`${API_URL}/register`, payload, { withCredentials: false });
   return response.data;
 };
@@ -25,7 +24,6 @@ const login = async (username, password) => {
     { username, password },
     { withCredentials: false }
   );
-  console.log("🟢 Login response:", response.data);
 
   // ✅ รองรับหลายรูปแบบคีย์ token จาก backend
   const data = response.data || {};

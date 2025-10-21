@@ -167,7 +167,6 @@ export default function LoginCarousel() {
       applyBabies(normalized);
       return normalized;
     } catch (err) {
-      console.error("Load babies failed:", err);
       return [];
     }
   }, [applyBabies, userId]);
@@ -234,7 +233,6 @@ export default function LoginCarousel() {
     } catch (err) {
       const backendMsg = err?.response?.data?.message || err?.message || "เข้าสู่ระบบไม่สำเร็จ";
       info(backendMsg);
-      console.error("Login failed:", err);
     }
   }, [fetchBabies, login]);
 
@@ -248,7 +246,6 @@ export default function LoginCarousel() {
     } catch (err) {
       const backendMsg = err?.response?.data?.message || err?.message || "ลงทะเบียนไม่สำเร็จ";
       info(backendMsg);
-      console.error("Register failed:", err);
     }
   }, []);
 
@@ -296,7 +293,6 @@ export default function LoginCarousel() {
     } catch (err) {
       const backendMsg = err?.response?.data?.message || err?.message || "เพิ่มลูกน้อยไม่สำเร็จ";
       info(backendMsg);
-      console.error("Register baby failed:", err);
     }
   }, [fetchBabies, userId]);
 

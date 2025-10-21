@@ -30,7 +30,6 @@ function copyAssetsPlugin() {
           copyRecursive(srcDir, publicSrcAssets);
         }
       } catch (e) {
-        console.warn('[copy-assets]', e?.message || e);
       }
     },
   };

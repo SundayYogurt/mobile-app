@@ -16,7 +16,6 @@ const resolveBaseURL = () => {
       return envBase;
     }
   } catch (err) {
-    console.warn("[api] Invalid VITE_BASE_URL", err);
   }
 
   return "";
@@ -64,7 +63,6 @@ api.interceptors.request.use(
       const token = Cookies.get("token");
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
-        console.log("✅ Attached token:", token);
       }
     } else {
   
@@ -87,15 +85,6 @@ api.interceptors.response.use(
     const url = cfg?.url || "<unknown>";
     const method = (cfg?.method || "GET").toUpperCase();
     const code = error?.code; // e.g. ECONNABORTED for timeout
-
-    // Console logging to aid debugging in browser devtools
-    console.error("API error:", {
-      method,
-      url,
-      status,
-      code,
-      message: error?.message,
-    });
 
     // Retry only for network/transient cases: no response, 502/503/504, timeouts
     const transient = !error.response || [502, 503, 504].includes(status) || code === "ECONNABORTED";

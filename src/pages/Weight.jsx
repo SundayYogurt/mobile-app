@@ -156,7 +156,6 @@ const Weight = () => {
         .filter((r) => r.weight > 0);
       setRows(mapped);
     } catch (e) {
-      console.error("load weight logs failed:", e);
     }
   };
 
@@ -238,7 +237,6 @@ const Weight = () => {
         await loadLogs();
         success("บันทึกน้ำหนักสำเร็จ");
       } catch (e) {
-        console.error(e);
         info("บันทึกไม่สำเร็จ");
       }
     }

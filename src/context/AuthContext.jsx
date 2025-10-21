@@ -24,7 +24,6 @@ export const AuthProvider = ({ children }) => {
 
       // decode token เพื่อดึง userId/username
       const decoded = jwtDecode(token);
-      console.log("🔑 Decoded token:", decoded);
 
       // รวมข้อมูลโปรไฟล์จาก response (เผื่อ JWT ไม่มี username/name)
       const respUser = response.data?.user || response.data || {};
@@ -44,7 +43,6 @@ export const AuthProvider = ({ children }) => {
 
       return mergedUser;
     } catch (error) {
-      console.error("Login error:", error);
       throw error;
     }
   };
@@ -76,7 +74,6 @@ export const AuthProvider = ({ children }) => {
       const decoded = jwtDecode(token);
       return { ...decoded, token };
     } catch (error) {
-      console.error("Invalid token:", error);
       Cookies.remove("token");
       return null;
     }

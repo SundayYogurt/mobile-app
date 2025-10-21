@@ -57,7 +57,6 @@ const Urine = () => {
       }));
       setRows(mapped);
     } catch (e) {
-      console.error("failed to load pee logs", e);
     }
   }
 

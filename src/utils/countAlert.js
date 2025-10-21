@@ -1,4 +1,4 @@
-import Swal from "sweetalert2";
+﻿import Swal from "sweetalert2";
 
 // Generic 1-input alert for count per day
 // Returns { count } as number (>0)

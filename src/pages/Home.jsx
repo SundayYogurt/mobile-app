@@ -67,6 +67,13 @@ export const Home = () => {
           </div>
         </Link>
 
+                {/* ปุ่ม: Profile */}
+        <Link to="/profile" className="w-full">
+            <button className="btn rounded-xl bg-[#CB6CE670] w-full h-[70px] text-[26px] font-medium">
+              โปรไฟล์
+            </button>
+        </Link>
+
       </div>
     </div>
   );

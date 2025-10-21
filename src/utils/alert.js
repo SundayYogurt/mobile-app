@@ -160,6 +160,29 @@ export async function registerAlert({
           <input id="swal-reg-confirm" class="swal2-input" placeholder="พิมพ์ซ้ำอีกครั้ง" type="password" autocomplete="new-password" />
           <span id="toggle-reg-confirm" class="eye-icon">👁️</span>
         </div>
+        <div class="ms-field">
+          <label for="swal-reg-education">ระดับการศึกษา</label>
+          <select id="swal-reg-education" class="swal2-input">
+            <option value="">เลือกระดับการศึกษา</option>
+            <option value="NONE">ไม่เคยเรียนเลย</option>
+            <option value="PRIMARY">ประถมศึกษา</option>
+            <option value="SECONDARY">มัธยมต้น</option>
+            <option value="HIGH_SCHOOL">มัธยมปลาย</option>
+            <option value="VOCATIONAL">ปวช./ปวส.</option>
+            <option value="BACHELOR">ปริญญาตรี</option>
+            <option value="MASTER">ปริญญาโท</option>
+            <option value="DOCTORATE">ปริญญาเอก</option>
+            <option value="OTHER">อื่นๆ</option>
+          </select>
+        </div>
+        <div class="ms-field">
+          <label for="swal-reg-birthday">วันเกิด</label>
+          <input id="swal-reg-birthday" class="swal2-input" type="date" />
+        </div>
+        <div class="ms-field">
+          <label for="swal-reg-antenatal-visits">จำนวนครั้งการฝากครรภ์</label>
+          <input id="swal-reg-antenatal-visits" class="swal2-input" placeholder="จำนวนครั้งการฝากครรภ์" type="number" />
+        </div>
       </form>
     `,
     didOpen: () => {
@@ -194,9 +217,14 @@ export async function registerAlert({
       const nameInput = document.getElementById("swal-reg-name")?.value?.trim();
       const password = document.getElementById("swal-reg-password")?.value ?? "";
       const confirmPassword = document.getElementById("swal-reg-confirm")?.value ?? "";
+      const age = document.getElementById("swal-reg-age")?.value;
+      const educationLevel = document.getElementById("swal-reg-education")?.value;
+      const birthday = document.getElementById("swal-reg-birthday")?.value;
+      const antenatal_visit_counts = document.getElementById("swal-reg-antenatal-visits")?.value;
 
-      if (!username || !password || !confirmPassword) {
-        Swal.showValidationMessage("กรอกข้อมูลให้ครบถ้วน (ชื่อผู้ใช้/รหัสผ่าน)");
+
+      if (!username || !password || !confirmPassword || !nameInput  || !educationLevel || !birthday || !antenatal_visit_counts) {
+        Swal.showValidationMessage("กรุณากรอกข้อมูลให้ครบถ้วน");
         return false;
       }
 
@@ -216,7 +244,7 @@ export async function registerAlert({
       }
 
       const name = nameInput && nameInput.length > 0 ? nameInput : username;
-      return { username, name, password, confirmPassword };
+      return { username, name, password, confirmPassword, educationLevel, birthday, antenatal_visit_counts: Number(antenatal_visit_counts) };
     },
   });
 

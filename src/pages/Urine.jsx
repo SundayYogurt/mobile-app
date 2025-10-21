@@ -116,8 +116,8 @@ const Urine = () => {
 
       <BabyTable
         columns={[
-          { key: "name", label: "วันที่" },
-          { key: "times", label: "จำนวนครั้ง" },
+          { key: "name", label: "วัน" },
+          { key: "times", label: "ครั้ง/วัน" },
           { key: "actions", label: "Actions" },
         ]}
         data={rows.map((row, idx) => ({
@@ -125,14 +125,18 @@ const Urine = () => {
           actions: (
             <div className="flex gap-2 justify-center">
               <button className="btn btn-xs bg-[#E2A9F1] text-white" onClick={() => handleEdit(idx)}>
-                Edit
+                แก้ไข
               </button>
             </div>
           ),
         }))}
       />
-      <PinkGraph data={rows} lines={[{ dataKey: "times", color: "#FF66C4", label: "จำนวนครั้ง" }]} />
+      <PinkGraph data={rows} lines={[{ dataKey: "times", color: "#FF66C4", label: "ครั้ง/วัน" }]} />
+
+        <img src="/src/assets/PP/pp.jpg"></img>
+
     </div>
+    
   );
 };
 

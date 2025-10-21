@@ -43,7 +43,7 @@ export const Poop = () => {
             }
           }}
         >
-          Edit
+          แก้ไข
         </button>
       ),
     }));
@@ -189,6 +189,8 @@ export const Poop = () => {
         data={graphData}
         lines={[{ dataKey: "times", color: "#FF66C4", label: "ครั้ง/วัน" }]}
       />
+
+      <img src="/src/assets/PP/pp.jpg"></img>
     </div>
   );
 };

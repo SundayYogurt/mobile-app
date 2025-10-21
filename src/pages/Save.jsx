@@ -159,7 +159,7 @@ export const Save = () => {
       <div className="w-full flex flex-col items-center justify-center mt-7 relative z-10 gap-4">
         <div className="relative">
           <button className="btn rounded-xl bg-white w-fit text-[22px] font-medium shadow-xl btn-ghost h-[52px]">
-            <CiCircleAlert className="w-[30px] h-[30px]" /> คำแนะนำการให้นม
+            <CiCircleAlert className="w-[30px] h-[30px]" /> เช็คท่าอุ้มก่อนนะคะ 😊
           </button>
         </div>
 
@@ -169,7 +169,7 @@ export const Save = () => {
           <img src="/src/assets/save/breastfeeding.png" className="w-[144px] h-[144px]" />
         </div>
 
-        <h1 className="text-[30px] font-medium mt-6">บันทึกการให้นม</h1>
+        <h1 className="text-[30px] font-medium mt-6">บันทึกการดูดนม</h1>
 
         <button
           onClick={toggleTimer}

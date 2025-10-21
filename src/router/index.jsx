@@ -16,6 +16,7 @@ import { Poop } from "../pages/Poop.jsx";
 import Urine from "../pages/Urine.jsx";
 import Unauthorized from "../pages/Unauthorized.jsx";
 import RequireAuth from "../components/RequireAuth.jsx";
+import Profile from "../pages/Profile.jsx";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -116,6 +117,21 @@ const router = createBrowserRouter([
         element: <Unauthorized />,
         handle: { title: "ไม่มีสิทธิ์เข้าถึง", backTo: "/" },
       },
+            {
+        path: "/profile",
+        element: (
+          <RequireAuth Fallback={Unauthorized}>
+            <Profile />
+          </RequireAuth>
+        ),
+        handle: { title: "Profile", backTo: "/" },
+      },
+      {
+        path: "/unauthorized",
+        element: <Unauthorized />,
+        handle: { title: "ไม่มีสิทธิ์เข้าถึง", backTo: "/" },
+      },
+    
     ],
   },
 ]);

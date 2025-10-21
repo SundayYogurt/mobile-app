@@ -239,9 +239,9 @@ export default function LoginCarousel() {
   const handleRegister = useCallback(async () => {
     const payload = await registerAlert();
     if (!payload) return;
-    const { username, name, password, confirmPassword } = payload;
+    const { username, name, password, confirmPassword, age, educationLevel, birthday, antenatal_visit_counts } = payload;
     try {
-      await AuthService.register({ username, name, password, confirmPassword });
+      await AuthService.register({ username, name, password, confirmPassword, age, educationLevel, birthday, antenatal_visit_counts });
       success("ลงทะเบียนสำเร็จ");
     } catch (err) {
       const backendMsg = err?.response?.data?.message || err?.message || "ลงทะเบียนไม่สำเร็จ";

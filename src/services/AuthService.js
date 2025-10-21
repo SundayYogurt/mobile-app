@@ -3,11 +3,11 @@ import TokenService from "./TokenService";
 
 const API_URL = import.meta.env.VITE_AUTH_API;
 
-const register = async (usernameOrPayload, name, password, confirmPassword) => {
+const register = async (usernameOrPayload, name, password, confirmPassword, educationLevel, birthday, antenatal_visit_counts) => {
   const payload =
     typeof usernameOrPayload === "object" && usernameOrPayload !== null
       ? usernameOrPayload
-      : { username: usernameOrPayload, name, password, confirmPassword };
+      : { username: usernameOrPayload, name, password, confirmPassword,educationLevel, birthday, antenatal_visit_counts };
 
   if (password !== confirmPassword) {
     throw new Error("รหัสผ่านและยืนยันรหัสผ่านไม่ตรงกัน");
@@ -50,5 +50,13 @@ const logout = () => {
   TokenService.removeUser();
 };
 
-const AuthService = { register, login, logout };
+const getUserProfile = async (userId) => {
+  if (!userId) {
+    throw new Error("User ID is required to fetch profile.");
+  }
+  const response = await api.get(`${API_URL}/profile/${userId}`, { withCredentials: false });
+  return response.data;
+};
+
+const AuthService = { register, login, logout, getUserProfile };
 export default AuthService;

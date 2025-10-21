@@ -9,27 +9,19 @@ import SelectedBabyService from "../services/SelectedBabyService";
 
 const BABY_ICON = "/src/assets/home/baby.png";
 
-const normalizeBabies = (raw = []) =>
-  raw
-    .map((item) => {
-      const id =
-        item?.id ??
-        item?.babyId ??
-        item?.uuid ??
-        item?.externalId ??
-        null;
-      const name = item?.name || item?.babyName || item?.title || "";
-      const birthday = item?.birthday || item?.dob || item?.birthDate || "";
-      if (!name) return null;
-      const days = birthday ? daysBetween(birthday) : 0;
-      return {
-        id: id ?? `${name}-${birthday || Math.random().toString(36).slice(2)}`,
-        name,
-        birthday,
-        days,
-      };
-    })
-    .filter(Boolean);
+/* ---------------------------------------------------
+   🔧 Utilities
+--------------------------------------------------- */
+
+const formatAgeLabel = ({ years = 0, months = 0, days = 0, fallbackDays = 0 }) => {
+  const parts = [];
+  if (years > 0) parts.push(`${years} ปี`);
+  if (months > 0) parts.push(`${months} เดือน`);
+  if (days > 0) parts.push(`${days} วัน`);
+  if (parts.length) return `อายุ ${parts.join(" ")}`;
+  if (fallbackDays > 0) return `อายุ ${fallbackDays} วัน`;
+  return "";
+};
 
 function daysBetween(isoDate) {
   try {
@@ -44,6 +36,51 @@ function daysBetween(isoDate) {
   }
 }
 
+const normalizeBabies = (raw = []) =>
+  raw
+    .map((item) => {
+      const id =
+        item?.id ?? item?.babyId ?? item?.uuid ?? item?.externalId ?? null;
+      const name = item?.name || item?.babyName || item?.title || "";
+      const birthday = item?.birthday || item?.dob || item?.birthDate || "";
+      if (!name) return null;
+
+      const ageYears = Number(item?.ageYears ?? item?.years ?? 0) || 0;
+      const ageMonths = Number(item?.ageMonths ?? item?.months ?? 0) || 0;
+      const ageDays = Number(item?.ageDays ?? item?.days ?? 0) || 0;
+
+      const derivedDays = birthday
+        ? daysBetween(birthday)
+        : ageYears * 365 + ageMonths * 30 + ageDays;
+
+      const weightRaw =
+        item?.birthWeight ??
+        item?.weight ??
+        item?.latestWeight ??
+        item?.currentWeight ??
+        item?.lastWeight ??
+        null;
+      const weight = Number(weightRaw);
+
+      return {
+        id: id ?? `${name}-${birthday || Math.random().toString(36).slice(2)}`,
+        name,
+        birthday,
+        days: derivedDays,
+        ageLabel: formatAgeLabel({
+          years: ageYears,
+          months: ageMonths,
+          days: ageDays,
+          fallbackDays: derivedDays,
+        }),
+        weight: Number.isFinite(weight) && weight > 0 ? weight : null,
+      };
+    })
+    .filter(Boolean);
+
+/* ---------------------------------------------------
+   🔄 Framer Motion Animation
+--------------------------------------------------- */
 const circleVariants = {
   enter: (dir) => ({
     x: dir > 0 ? 200 : -200,
@@ -66,18 +103,36 @@ const circleVariants = {
   }),
 };
 
+/* ---------------------------------------------------
+   🎠 Component
+--------------------------------------------------- */
 export default function LoginCarousel() {
   const { login, user } = useAuthContext();
   const [index, setIndex] = useState(0);
   const [direction, setDirection] = useState(1);
   const [babies, setBabies] = useState([]);
 
-  const userId = useMemo(
-    () => user?.userId ?? user?.id ?? user?.sub ?? null,
-    [user]
-  );
-  const storageKey = useMemo(
-    () => (userId ? `ms_babies_${userId}` : null),
+  const userId = useMemo(() => user?.userId ?? user?.id ?? user?.sub ?? null, [user]);
+  const storageKey = useMemo(() => (userId ? `ms_babies_${userId}` : null), [userId]);
+
+  /* ---------------------------------------------------
+     🧠 Helper: Sync Selected Baby
+  --------------------------------------------------- */
+  const syncSelectedIndex = useCallback(
+    (list = []) => {
+      if (!Array.isArray(list) || list.length === 0) {
+        if (userId) SelectedBabyService.remove(userId);
+        return;
+      }
+
+      const stored = SelectedBabyService.get(userId);
+      const matchById = (item, value) =>
+        item?.id != null && value != null && String(item.id) === String(value);
+
+      const idx = stored ? list.findIndex((b) => matchById(b, stored.id)) : 0;
+      if (idx >= 0) setIndex(idx);
+      else setIndex(0);
+    },
     [userId]
   );
 
@@ -89,20 +144,14 @@ export default function LoginCarousel() {
           localStorage.setItem(storageKey, JSON.stringify(list));
         } catch {}
       }
-      if (!userId) return;
-      const current = SelectedBabyService.get(userId);
-      if (list.length === 0) {
-        if (current) SelectedBabyService.remove(userId);
-        return;
-      }
-      if (!current || !list.some((b) => b.id === current.id)) {
-        const first = list[0];
-        SelectedBabyService.set(userId, { id: first.id, name: first.name });
-      }
+      syncSelectedIndex(list);
     },
-    [storageKey, userId]
+    [storageKey, syncSelectedIndex]
   );
 
+  /* ---------------------------------------------------
+     🔍 โหลดข้อมูลลูกน้อย
+  --------------------------------------------------- */
   const fetchBabies = useCallback(async () => {
     if (!userId) return [];
     try {
@@ -123,6 +172,9 @@ export default function LoginCarousel() {
     }
   }, [applyBabies, userId]);
 
+  /* ---------------------------------------------------
+     🧭 โหลดข้อมูลเมื่อเข้า Home (จำ index เดิมไว้)
+  --------------------------------------------------- */
   useEffect(() => {
     if (!userId) {
       setBabies([]);
@@ -135,25 +187,27 @@ export default function LoginCarousel() {
         const cached = JSON.parse(localStorage.getItem(storageKey) || "null");
         if (Array.isArray(cached) && cached.length) {
           setBabies(cached);
+
+          // ✅ โหลด baby ที่เลือกไว้ก่อนหน้า
+          const stored = SelectedBabyService.get(userId);
+          if (stored) {
+            const idx = cached.findIndex((b) => String(b.id) === String(stored.id));
+            if (idx >= 0) setIndex(idx);
+            else setIndex(0);
+          } else {
+            setIndex(0);
+          }
         }
       } catch {}
     }
 
+    // ✅ โหลดข้อมูลจาก API โดยไม่รีเซ็ต index
     fetchBabies();
   }, [fetchBabies, storageKey, userId]);
 
-  useEffect(() => {
-    setIndex(0);
-  }, [userId]);
-
-  useEffect(() => {
-    const slidesCount = babies.length + (user ? 1 : 2);
-    setIndex((prev) => {
-      if (slidesCount <= 0) return 0;
-      return Math.min(prev, slidesCount - 1);
-    });
-  }, [babies.length, user]);
-
+  /* ---------------------------------------------------
+     🧩 เมื่อเปลี่ยน index หรือ list
+  --------------------------------------------------- */
   useEffect(() => {
     if (!userId || !babies.length) return;
     const safeIndex = Math.min(index, babies.length - 1);
@@ -166,6 +220,9 @@ export default function LoginCarousel() {
     }
   }, [babies, index, userId]);
 
+  /* ---------------------------------------------------
+     🔐 เข้าสู่ระบบ / ลงทะเบียน / เพิ่มลูกน้อย
+  --------------------------------------------------- */
   const handleLogin = useCallback(async () => {
     const creds = await loginAlert();
     if (!creds) return;
@@ -207,10 +264,7 @@ export default function LoginCarousel() {
     const { name, birthday, birthWeight, ageText } = payload;
     try {
       const response = await BabyService.addBaby({ name, birthday, birthWeight });
-      const created =
-        response?.data?.data ??
-        response?.data ??
-        {};
+      const created = response?.data?.data ?? response?.data ?? {};
 
       const updated = await fetchBabies();
       let nextIndex = updated.findIndex((b) => {
@@ -246,6 +300,9 @@ export default function LoginCarousel() {
     }
   }, [fetchBabies, userId]);
 
+  /* ---------------------------------------------------
+     🧷 สร้าง slides
+  --------------------------------------------------- */
   const loginSlide = useMemo(
     () => ({
       id: "login",
@@ -285,7 +342,8 @@ export default function LoginCarousel() {
       babies.map((baby, i) => ({
         id: baby.id ?? `baby-${i}`,
         title: baby.name,
-        subtitle: baby.birthday ? `อายุ ${baby.days} วัน` : "",
+        subtitle: baby.ageLabel || "",
+        description: baby.weight ? `น้ำหนักแรกเกิด ${baby.weight.toLocaleString()} กรัม` : "",
         icon: BABY_ICON,
         type: "baby",
         baby,
@@ -298,6 +356,9 @@ export default function LoginCarousel() {
     return [...babySlides, addSlide];
   }, [addSlide, babySlides, loginSlide, registerSlide, user]);
 
+  /* ---------------------------------------------------
+     🎠 UI Render
+  --------------------------------------------------- */
   if (!slides.length || !slides[index]) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-gray-400">
@@ -356,9 +417,11 @@ export default function LoginCarousel() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
           >
-            <div className="text-base font-medium text-gray-700">{slides[index].title}</div>
             {slides[index].subtitle ? (
               <div className="text-sm text-gray-500">{slides[index].subtitle}</div>
+            ) : null}
+            {slides[index].description ? (
+              <div className="text-sm text-gray-500 mt-1">{slides[index].description}</div>
             ) : null}
           </motion.div>
         ) : (

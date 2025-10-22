@@ -1,8 +1,28 @@
-import React from "react";
+import React, { useEffect } from "react";
 import LoginCarousel from "../components/LoginCarousel";
 import { Link } from "react-router";
+import { useAuthContext } from "../hooks/useAuth";
+import { notify } from "../utils/alert";
 
 export const Home = () => {
+  const { justLoggedIn, resetJustLoggedIn } = useAuthContext();
+
+  useEffect(() => {
+    if (justLoggedIn) {
+      notify({
+        title: "ทำแบบประเมินความรู้หลังคลอด",
+        html: `
+          <p>คลิกเพื่อทำแบบประเมิน</p>
+          <a href="https://docs.google.com/forms/d/e/1FAIpQLSeBhbm5PymqpM290yE0oMxX96Lbok2Gl4IkYpOKc_v_eaXHug/viewform?pli=1" target="_blank" rel="noopener noreferrer">
+            <button class="btn btn-primary mt-4">ไปที่แบบประเมิน</button>
+          </a>
+        `,
+        confirmText: "ปิด",
+      });
+      resetJustLoggedIn();
+    }
+  }, [justLoggedIn, resetJustLoggedIn]);
+
   return (
     <div className="flex flex-col items-center justify-start mt-[-50px] h-auto">
       {/* ✅ Carousel อยู่ด้านบน */}

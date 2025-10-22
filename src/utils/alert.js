@@ -2,10 +2,11 @@
 import Swal from "sweetalert2";
 
 // ฟังก์ชันแจ้งเตือนพื้นฐาน
-export function notify({ title = "", text = "", confirmText = "ตกลง" } = {}) {
+export function notify({ title = "", text = "", html = "", confirmText = "ตกลง" } = {}) {
   return Swal.fire({
     title,
     text,
+    html: html || text, // Use html if provided, otherwise use text
     confirmButtonText: confirmText,
     confirmButtonColor: "#F5D8EB",
     backdrop: true,

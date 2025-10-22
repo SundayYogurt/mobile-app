@@ -18,6 +18,7 @@ import Unauthorized from "../pages/Unauthorized.jsx";
 import RequireAuth from "../components/RequireAuth.jsx";
 import Profile from "../pages/Profile.jsx";
 import EditProfile from "../pages/EditProfile.jsx";
+import BabySign from "../pages/BabySign.jsx";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -69,6 +70,11 @@ const router = createBrowserRouter([
       {
         path: "/four-point",
         element: <FourPoint />,
+        handle: { title: "ความรู้", backTo: "/knowledge" },
+      },
+      {
+        path: "/baby-sign",
+        element: <BabySign />,
         handle: { title: "ความรู้", backTo: "/knowledge" },
       },
       {

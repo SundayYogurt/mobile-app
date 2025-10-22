@@ -162,8 +162,12 @@ export const Save = () => {
             <CiCircleAlert className="w-[30px] h-[30px]" /> เช็คท่าอุ้มก่อนนะคะ 😊
           </button>
         </div>
-
         {/* (ลบ element ที่ class แตกออก) */}
+
+        <div className="absolute -mt-170 mr-150 -translate-x-40 xs:-translate-x-10 text-3xl text-[#e3a9f1d7] xs:absolute xs:-mt-145 xs:mr-50 xs:text-3xl xs:text-[#e3a9f1d7]">close</div>
+        <div className="absolute -mt-30 mr-150 text-3xl -translate-x-40 xs:-translate-x-10 *:text-[#e3a9f1d7] xs:absolute xs:-mt-35 xs:mr-50 xs:text-3xl xs:text-[#e3a9f1d7]">face</div>
+        <div className="absolute -mt-170 -mr-150 text-3xl  translate-x-40 xs:translate-x-1 text-[#e3a9f1d7xs:absolute xs:-mt-145 xs:-ml-90 xs:text-3xl xs:text-[#e3a9f1d7]">straight</div>
+        <div className="absolute -mt-30 -mr-150 text-3xl  translate-x-40 text-[#e3a9f1d7 xs:translate-x-1 xs:absolute xs:-mt-35 xs:-ml-90 xs:text-3xl xs:text-[#e3a9f1d7]">support</div>
 
         <div className="rounded-full bg-[#E2A9F1] w-[200px] h-[200px] flex items-center justify-center mt-4">
           <img src="/src/assets/save/breastfeeding.png" className="w-[144px] h-[144px]" />

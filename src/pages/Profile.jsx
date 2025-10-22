@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import UserProfileService from "../services/UserProfileService";
 import Swal from "sweetalert2";
 import { useAuthContext } from "../context/AuthContext";
+import { Link } from "react-router";
 
 const Profile = () => {
   const [profile, setProfile] = useState({});
@@ -75,14 +76,13 @@ const Profile = () => {
       </div>
 
       {/* 🌷 ปุ่มแก้ไข */}
+      <Link to={`/edit-profile/${profile?.id}`} >
       <button
-        onClick={() =>
-          Swal.fire("กำลังพัฒนา", "ฟีเจอร์แก้ไขโปรไฟล์จะมาเร็ว ๆ นี้ 💗", "info")
-        }
         className="mt-8 bg-pink-500 hover:bg-pink-600 text-white font-semibold py-2 px-8 rounded-full shadow-md transition-all duration-300 hover:scale-105"
       >
         แก้ไขข้อมูล
-      </button>
+      </button >
+         </Link>
 
       {/* 🕊️ เครดิตเล็ก ๆ */}
       <p className="text-sm text-gray-400 mt-6">

@@ -17,6 +17,7 @@ import Urine from "../pages/Urine.jsx";
 import Unauthorized from "../pages/Unauthorized.jsx";
 import RequireAuth from "../components/RequireAuth.jsx";
 import Profile from "../pages/Profile.jsx";
+import EditProfile from "../pages/EditProfile.jsx";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -125,6 +126,20 @@ const router = createBrowserRouter([
           </RequireAuth>
         ),
         handle: { title: "Profile", backTo: "/" },
+      },
+      {
+        path: "/unauthorized",
+        element: <Unauthorized />,
+        handle: { title: "ไม่มีสิทธิ์เข้าถึง", backTo: "/" },
+      },
+                  {
+        path: "/edit-profile/:id",
+        element: (
+          <RequireAuth Fallback={Unauthorized}>
+            <EditProfile />
+          </RequireAuth>
+        ),
+        handle: { title: "Edit Profile", backTo: "/profile" },
       },
       {
         path: "/unauthorized",

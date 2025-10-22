@@ -9,7 +9,7 @@ import BabyService from "../services/BabyService";
 
 export const Poop = () => {
   const { user } = useAuthContext();
-  const [rows, setRows] = useState([]); // [{ id, date, count }]
+  const [rows, setRows] = useState([]); // [{ id, date, count, checkPoop }]
   const [poopWarning, setPoopWarning] = useState(false);
 
   const uid = useMemo(() => user?.userId ?? user?.id ?? user?.sub, [user]);
@@ -75,44 +75,32 @@ export const Poop = () => {
         ? res.data
         : Array.isArray(res?.data?.data)
         ? res.data.data
-        : Array.isArray(res?.data?.response)
-        ? res.data.response
         : [];
-      const mapped = raw
-        .map((it, idx) => ({
-          id: it?.id ?? it?.logId ?? it?._id ?? idx,
-          date:
-            it?.date ||
-            it?.createdAt ||
-            it?.created_at ||
-            it?.logDate ||
-            new Date().toISOString().slice(0, 10),
-          count: Number(it?.totalPoop ?? it?.count ?? it?.times ?? it?.value) || 0,
-        }))
-        .filter((r) => r.count >= 0);
+      const mapped = raw.map((it, idx) => ({
+        id: it.id ?? idx,
+        date: it.date || new Date().toISOString().slice(0, 10),
+        count: Number(it.totalPoop ?? 0),
+        checkPoop: it.checkPoop || "",
+      }));
       setRows(mapped);
-    } catch (e) {
+    } catch {
+      info("ไม่สามารถโหลดข้อมูลได้");
     }
   };
 
-  // ✅ โหลดข้อมูลครั้งแรก
   useEffect(() => {
     loadLogs();
   }, [uid, selected?.id]);
 
-  // ✅ ตรวจสอบการถ่ายอุจจาระ & น้ำหนักทารก
   useEffect(() => {
     const checkWarnings = async () => {
       if (!uid || !selected?.id) return;
 
-      // 🍼 ตรวจว่าทารกถ่ายหรือยังใน 24 ชม. แรก
       const babyRes = await BabyService.getAllByUserId(uid);
       const babies = Array.isArray(babyRes?.data)
         ? babyRes.data
         : Array.isArray(babyRes?.data?.data)
         ? babyRes.data.data
-        : Array.isArray(babyRes?.data?.response)
-        ? babyRes.data.response
         : [];
 
       const baby = babies.find((b) => (b?.id ?? b?.babyId) === selected.id);
@@ -120,33 +108,26 @@ export const Poop = () => {
 
       const birthDate = new Date(baby?.birthday || baby?.dob || baby?.birthDate);
       const ageHours = (Date.now() - birthDate.getTime()) / 3600000;
-
-      // ไม่มี poop logs และอายุเกิน 24 ชม.
       const hasPoop = rows.length > 0;
-      if (!hasPoop && ageHours >= 24) setPoopWarning(true);
-      else setPoopWarning(false);
-
-      // ⚖️ ตรวจน้ำหนักล่าสุด
+      setPoopWarning(!hasPoop && ageHours >= 24);
     };
-
     checkWarnings();
   }, [uid, selected?.id, rows]);
 
-  return (
-    <div className="w-full flex flex-col items-center justify-center mt-10 relative z-10 gap-6 px-6 max-w-[440px] mx-auto">
+  // 🩷 ข้อความเตือนจาก checkPoop (ล่าสุด)
+  const latestCheckPoop = rows.length > 0 ? rows[rows.length - 1]?.checkPoop : "";
 
-      {/* ✅ กล่องแจ้งเตือนสุขภาพ */}
+  return (
+    <div className="w-full flex flex-col items-center justify-center mt-10 gap-6 px-6 max-w-[640px] mx-auto">
+      {/* 🔔 คำเตือนเมื่อไม่มีอุจจาระภายใน 24 ชม. */}
       {poopWarning && (
-        <div className="w-full max-w-[640px] mx-auto px-4">
-          <div className="text-[#6C3B73] text-sm font-semibold mb-2">คำเตือนสำหรับทารก</div>
-          <div className="rounded-lg border border-pink-200 bg-pink-50 px-4 py-3 text-sm text-[#6C3B73] shadow-sm mb-2">
-            <strong className="font-semibold">อุจจาระทารก: </strong>
-            หากภายใน 24 ชั่วโมงแรกหลังคลอดยังไม่มีการถ่ายควรรีบปรึกษาแพทย์หรือพยาบาลเพื่อประเมินอาการ
-            และติดตามอาการอื่น ๆ ของทารกอย่างใกล้ชิด
-          </div>
+        <div className="w-full rounded-lg border border-pink-200 bg-pink-50 px-4 py-3 text-sm text-[#6C3B73] shadow-sm">
+          <strong className="font-semibold">อุจจาระทารก:</strong>{" "}
+          หากภายใน 24 ชั่วโมงแรกหลังคลอดยังไม่มีการถ่าย ควรรีบปรึกษาแพทย์ทันที
         </div>
       )}
-      {/* ✅ ปุ่มและตาราง */}
+
+      {/* 🩷 ปุ่มบันทึก */}
       <button
         onClick={async () => {
           if (!uid || !selected?.id) {
@@ -169,28 +150,45 @@ export const Poop = () => {
                 userId: uid,
               });
               await loadLogs();
-              success(`บันทึกสำเร็จ\nอุจจาระ: ${res.count} ครั้ง/วัน`);
-            } catch (e) {
+              success(`บันทึกสำเร็จ: ${res.count} ครั้ง/วัน`);
+            } catch {
               info("บันทึกไม่สำเร็จ");
             }
           }
         }}
-        className="btn rounded-xl bg-[#F5D8EB] text-xl font-light w-full"
+        className="btn rounded-xl bg-[#F5D8EB] text-lg font-medium text-[#6C3B73] w-full shadow-sm"
       >
         บันทึกจำนวนอุจจาระ
       </button>
 
-      <BabyTable
-        columns={["วัน", "ครั้ง/วัน", "Actions"]}
-        data={tableData}
-      />
+      {/* 📋 ตาราง */}
+      <BabyTable columns={["วัน", "ครั้ง/วัน", "Actions"]} data={tableData} />
 
+      {/* 📈 กราฟ */}
       <PinkGraph
         data={graphData}
         lines={[{ dataKey: "times", color: "#FF66C4", label: "ครั้ง/วัน" }]}
       />
 
-      <img src="/src/assets/PP/pp.jpg"></img>
+      {/* 💡 แสดงคำเตือนล่าสุดก่อนรูป */}
+      {latestCheckPoop && (
+        <div
+          className={`w-full text-sm text-center mt-4 px-4 py-3 rounded-xl shadow-sm border ${
+            latestCheckPoop.includes("ผิดปกติ")
+              ? "bg-red-50 border-red-200 text-red-600"
+              : "bg-green-50 border-green-200 text-green-700"
+          }`}
+        >
+          <strong>ผลวิเคราะห์ล่าสุด:</strong> {latestCheckPoop}
+        </div>
+      )}
+
+      {/* 🌸 รูปภาพ */}
+      <img
+        src="/src/assets/PP/pp.jpg"
+        alt="baby"
+        className="rounded-xl shadow-md"
+      />
     </div>
   );
 };

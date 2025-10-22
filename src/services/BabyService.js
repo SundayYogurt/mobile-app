@@ -44,11 +44,21 @@ const createBabyFeedingLog = async (babyId, payload = {}) => {
     throw new Error("invalid durationMinutes");
   }
 
-  const body = { durationMinutes, userId };
-  if (payload.createdAt) body.createdAt = payload.createdAt; // รองรับเพิ่มย้อนหลัง
+  // ✅ รวมค่าทั้งหมดไว้ใน body
+  const body = {
+    durationMinutes,
+    userId,
+    logDate: payload.logDate ?? new Date().toISOString(), // ✅ ใส่ logDate เสมอ
+  };
+
+  // ถ้ามี createdAt ก็ยังเก็บไว้ได้
+  if (payload.createdAt) body.createdAt = payload.createdAt;
+
+  console.log("🍼 ส่งไป backend:", body); // ✅ debug ดูได้ใน console
 
   return api.post(`${API_URL}/${babyId}/recordBabyFeeding`, body, { withCredentials: false });
 };
+
 
 // alias เพื่อให้หน้า Save ที่เรียก recordBabyFeeding ทำงานได้เลย
 const recordBabyFeeding = async (babyId, payload = {}) => {
@@ -185,9 +195,16 @@ const recordBabyPeeing = async (babyId, payload = {}) => {
     ) || 0;
   if (!c) throw new Error("invalid pee count");
 
-  const body = { totalPee: c, userId };
+  const body = { 
+    totalPee: c, 
+    userId, 
+    logDate: payload.logDate ?? new Date().toISOString(), // ✅ ใส่เวลาที่ส่งมาจาก frontend
+  };
+
+  console.log("💧 ส่งข้อมูลปัสสาวะ:", body);
   return api.post(`${API_URL}/${babyId}/recordBabyPeeing`, body, { withCredentials: false });
 };
+
 
 const updateBabyPeeLog = async (babyId, logId, payload = {}) => {
   if (!babyId || !logId) throw new Error("missing babyId or logId");

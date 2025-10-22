@@ -266,10 +266,11 @@ const Weight = () => {
       )}
 
       <button
+        disabled={hasToday}
         onClick={onWeightClick}
         className="btn rounded-xl bg-[#F5D8EB] text-xl font-light w-full"
       >
-        บันทึกน้ำหนัก
+        {hasToday ? "วันนี้บันทึกแล้ว" : "บันทึกน้ำหนัก"}
       </button>
 
       <BabyTable

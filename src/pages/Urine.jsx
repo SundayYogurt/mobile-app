@@ -11,30 +11,58 @@ const Urine = () => {
   const { user } = useAuthContext();
   const [rows, setRows] = useState([]);
   const [logs, setLogs] = useState([]);
+
   const uid = useMemo(() => user?.userId ?? user?.id ?? user?.sub, [user]);
   const selected = useMemo(() => (uid ? SelectedBabyService.get(uid) : null), [uid]);
 
-  const todayKey = useMemo(() => {
-    const d = new Date();
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, "0");
-    const dd = String(d.getDate()).padStart(2, "0");
-    return `${y}-${m}-${dd}`;
-  }, []);
+  // ✅ ใช้เวลาไทย (UTC+7)
+  const getBangkokDateKey = (date = new Date()) => {
+    const bangkok = new Date(date.getTime() + 7 * 60 * 60 * 1000);
+    const y = bangkok.getFullYear();
+    const m = String(bangkok.getMonth() + 1).padStart(2, "0");
+    const d = String(bangkok.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  };
 
+  // ✅ ตรวจว่ามีข้อมูลของ "วันนี้" แล้วหรือยัง
   const hasToday = useMemo(() => {
-    const keyOf = (v) => {
-      const src = v?.date || v?.createdAt || v?.created_at || v?.logDate;
-      const d = src ? new Date(src) : null;
-      if (!d || Number.isNaN(d.getTime())) return null;
-      const y = d.getFullYear();
-      const m = String(d.getMonth() + 1).padStart(2, "0");
-      const dd = String(d.getDate()).padStart(2, "0");
-      return `${y}-${m}-${dd}`;
-    };
-    return Array.isArray(logs) && logs.some((l) => keyOf(l) === todayKey);
-  }, [logs, todayKey]);
+    const todayKey = getBangkokDateKey();
+    console.log('🔍 Today key:', todayKey);
+    console.log('📋 All logs:', logs);
+    
+    // ถ้ายังไม่มี logs เลย ให้ return false
+    if (!Array.isArray(logs) || logs.length === 0) {
+      console.log('❌ No logs found');
+      return false;
+    }
 
+    // ดู object แรกเพื่อหา field วันที่
+    console.log('🔬 First log full object:', logs[0]);
+    console.log('🔬 All keys:', Object.keys(logs[0]));
+    
+    const result = logs.some((l) => {
+      // ลองหา field ทุกแบบที่เป็นไปได้
+      const src = l?.logDate || l?.date || l?.createdAt || l?.created_at || 
+                  l?.recordDate || l?.peeDate || l?.timestamp || l?.updatedAt || l?.updated_at;
+      
+      console.log('📅 Log date source:', src);
+      
+      if (!src) {
+        // ถ้าไม่มี field วันที่เลย ให้ถือว่าเป็นวันนี้ (เพิ่งสร้างมา)
+        console.log('⚠️ No date field found - treating as today');
+        return true;
+      }
+      
+      const recordKey = getBangkokDateKey(new Date(src));
+      console.log('🗓️ Record key:', recordKey, '| Match:', recordKey === todayKey);
+      return recordKey === todayKey;
+    });
+    
+    console.log('✅ Has today:', result);
+    return result;
+  }, [logs]);
+
+  // ✅ โหลดข้อมูลทั้งหมด
   useEffect(() => {
     loadLogs();
   }, [uid, selected?.id]);
@@ -43,20 +71,19 @@ const Urine = () => {
     if (!uid || !selected?.id) return;
     try {
       const res = await BabyService.showBabyPeeLogs(selected.id);
-      const data = Array.isArray(res?.data?.data)
-        ? res.data.data
-        : Array.isArray(res?.data?.logs)
-        ? res.data.logs
-        : Array.isArray(res?.data)
-        ? res.data
-        : [];
+      console.log('🌐 API Response:', res);
+      
+      const data =
+        Array.isArray(res?.data?.data) ||
+        Array.isArray(res?.data?.logs) ||
+        Array.isArray(res?.data)
+          ? res.data.data || res.data.logs || res.data
+          : [];
 
       setLogs(data);
 
       const mapped = data.map((l, idx) => ({
-        name: l?.createdAt
-          ? new Date(l.createdAt).toLocaleDateString()
-          : `Day ${idx + 1}`,
+        name: `วัน ${idx + 1}`,
         times:
           Number(
             l?.totalPee ??
@@ -75,6 +102,7 @@ const Urine = () => {
     }
   }
 
+  // ✅ ฟังก์ชันแก้ไขข้อมูล
   async function handleEdit(index) {
     const log = logs[index];
     if (!log) return;
@@ -89,6 +117,7 @@ const Urine = () => {
           log?.value ??
           0
       ) || 1;
+
     const res = await countPerDayAlert({
       title: "แก้ไขจำนวนปัสสาวะ",
       label: "จำนวนครั้งใหม่",
@@ -96,12 +125,18 @@ const Urine = () => {
       confirmText: "อัปเดต",
     });
     if (!res) return;
+
+    // ✅ ใช้เวลาไทยตอนแก้ไข
+    const bangkokNow = new Date(new Date().getTime() + 7 * 60 * 60 * 1000);
+
     try {
       await BabyService.updateBabyPeeLog(selected.id, id, {
         totalPee: res.count,
         userId: uid,
+        logDate: bangkokNow.toISOString(),
       });
       await loadLogs();
+      success("อัปเดตสำเร็จ");
     } catch (err) {
       const msg = err?.response?.data?.message || err?.message || "";
       info(msg || "อัปเดตไม่สำเร็จ");
@@ -121,29 +156,47 @@ const Urine = () => {
             info("กรุณาเลือกเด็กก่อนทำรายการ");
             return;
           }
+
+          // ✅ เช็คซ้ำอีกรอบก่อนบันทึก
+          const todayKey = getBangkokDateKey();
+          const alreadyRecorded = logs.some(l => {
+            const src = l?.logDate || l?.date || l?.createdAt || l?.created_at ||
+                        l?.recordDate || l?.peeDate || l?.timestamp;
+            if (!src) return true; // ถ้าไม่มี date field ถือว่ามีแล้ว
+            return getBangkokDateKey(new Date(src)) === todayKey;
+          });
+
+          if (alreadyRecorded) {
+            info("วันนี้บันทึกแล้ว โปรดแก้ไขรายการเดิมหากต้องการเปลี่ยน");
+            return;
+          }
+
           const res = await countPerDayAlert({
             title: "บันทึกจำนวนปัสสาวะ",
             label: "ระบุจำนวนครั้งต่อวัน",
             placeholder: "เช่น 6",
           });
+
           if (res) {
+            const bangkokNow = new Date(new Date().getTime() + 7 * 60 * 60 * 1000);
+
             try {
               await BabyService.recordBabyPeeing(selected.id, {
                 totalPee: res.count,
                 userId: uid,
+                logDate: bangkokNow.toISOString(),
               });
+              success(`บันทึกสำเร็จ\nจำนวนปัสสาวะ: ${res.count} ครั้ง/วัน`);
+              await loadLogs();
             } catch (e) {
               const msg = e?.response?.data?.message || e?.message || "";
               info(msg || "ไม่สามารถบันทึกจำนวนปัสสาวะได้");
-              return;
             }
-            success(`บันทึกสำเร็จ\nจำนวนปัสสาวะ: ${res.count} ครั้ง/วัน`);
-            await loadLogs();
           }
         }}
         className="btn rounded-xl bg-[#F5D8EB] text-xl font-light w-full"
       >
-        บันทึกจำนวนปัสสาวะ
+        {hasToday ? "วันนี้บันทึกแล้ว" : "บันทึกจำนวนปัสสาวะ"}
       </button>
 
       {/* ตารางข้อมูล */}
@@ -191,7 +244,7 @@ const Urine = () => {
       <img
         src="/src/assets/PP/pp.jpg"
         alt="baby"
-        className=" rounded-xl shadow-md"
+        className="rounded-xl shadow-md"
       />
     </div>
   );

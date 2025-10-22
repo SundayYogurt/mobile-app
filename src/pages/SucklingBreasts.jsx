@@ -18,6 +18,12 @@ const formatDateDisplay = (value) => {
   });
 };
 
+const formatDayLabel = (value) => {
+  const d = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(d.getTime())) return "-";
+  return `วันที่ ${d.getDate()}`;
+};
+
 const formatDateKey = (date) =>
   `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(
     date.getDate()
@@ -79,23 +85,54 @@ const SucklingBreasts = () => {
         byDay.set(key, current);
       });
 
-      // เตรียมย้อนหลัง 14 วัน
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
+// ✅ คำนวณวันย้อนหลังโดยเริ่มจากวันแรกที่มีข้อมูลจริง
+const allDates = [...byDay.keys()].sort(); // เรียงจากเก่าสุด → ล่าสุด
 
-      const filled14 = Array.from({ length: 14 }, (_, idx) => {
-        const day = new Date(today);
-        day.setDate(today.getDate() - idx);
-        const key = formatDateKey(day);
-        const data = byDay.get(key);
-        return {
-          dayLabel: `วันที่ ${idx + 1}`,
-          displayDate: formatDateDisplay(day),
-          dateKey: key,
-          totalMinutes: Math.round(data?.totalMinutes ?? 0),
-          count: data?.count ?? 0,
-        };
-      });
+let filled14 = [];
+
+if (allDates.length > 0) {
+  // วันแรกและวันสุดท้ายที่มีข้อมูล
+  const firstDate = new Date(allDates[0]);
+  const lastDate = new Date(allDates[allDates.length - 1]);
+
+  // ถ้ามีข้อมูลน้อยกว่า 14 วัน ให้เริ่มจาก firstDate เลย
+  const startDate = firstDate;
+
+  const totalDays =
+    Math.min(
+      14,
+      Math.ceil((lastDate - startDate) / (1000 * 60 * 60 * 24)) + 1
+    ) || 1;
+
+  filled14 = Array.from({ length: totalDays }, (_, idx) => {
+    const day = new Date(startDate);
+    day.setDate(startDate.getDate() + idx);
+
+    const key = formatDateKey(day);
+    const data = byDay.get(key);
+    return {
+      dayLabel: `วันที่ ${idx + 1}`,
+      displayDate: formatDateDisplay(day),
+      dateKey: key,
+      day: day, // Add the day object here
+      totalMinutes: Math.round(data?.totalMinutes ?? 0),
+      count: data?.count ?? 0,
+    };
+  });
+} else {
+  // ถ้ายังไม่มีข้อมูลเลย → เริ่มวันนี้เป็นวันที่ 1
+        filled14 = [
+          {
+            dayLabel: "วันที่ 1",
+            displayDate: formatDateDisplay(new Date()),
+            dateKey: formatDateKey(new Date()),
+            day: new Date(), // Add the day object here
+            totalMinutes: 0,
+            count: 0,
+          },
+        ];}
+
+
 
       const lastIndexWithData = filled14.findIndex((r) => r.count > 0);
       let rowsToShow;
@@ -204,17 +241,17 @@ const SucklingBreasts = () => {
 
   const hasData = dailyRows.some((d) => d.count > 0);
 
-  const graphData = useMemo(
-    () =>
-      hasData
-        ? [...dailyRows].reverse().map((d) => ({
-            name: d.displayDate,
-            minutes: d.totalMinutes,
-            times: d.count,
-          }))
-        : [],
-    [dailyRows, hasData]
-  );
+const graphData = useMemo(
+  () =>
+    hasData
+      ? [...dailyRows].reverse().map((d) => ({
+          name: d.dayLabel,
+          minutes: d.totalMinutes,
+          times: d.count,
+        }))
+      : [],
+  [dailyRows, hasData]
+);
 
   return (
     <div className="w-full flex flex-col items-center justify-center mt-10 gap-6 px-6 max-w-[440px] mx-auto">

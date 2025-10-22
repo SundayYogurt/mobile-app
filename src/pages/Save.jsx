@@ -12,19 +12,19 @@ export const Save = () => {
   const navigate = useNavigate();
 
   const [running, setRunning] = useState(false);
-  const [displayMs, setDisplayMs] = useState(0); // เวลาแสดงผลขณะ session ยังรันอยู่
-  const [sessionAccumulatedMs, setSessionAccumulatedMs] = useState(0); // เวลาสะสมของ session ปัจจุบัน
-  const [sessionCount, setSessionCount] = useState(0); // จำนวนรอบใน session ปัจจุบัน
-  const [baseCountToday, setBaseCountToday] = useState(0); // จำนวนครั้งที่บันทึกไว้ก่อนหน้าในวันนี้
-  const [baseMinutesToday, setBaseMinutesToday] = useState(0); // เวลานาทีที่บันทึกไว้ก่อนหน้าในวันนี้
-  const [saving, setSaving] = useState(false); // กันกดซ้ำ
+  const [displayMs, setDisplayMs] = useState(0);
+  const [sessionAccumulatedMs, setSessionAccumulatedMs] = useState(0);
+  const [sessionCount, setSessionCount] = useState(0);
+  const [baseCountToday, setBaseCountToday] = useState(0);
+  const [baseMinutesToday, setBaseMinutesToday] = useState(0);
+  const [saving, setSaving] = useState(false);
 
   const startAtRef = useRef(null);
 
   const uidMemo = useMemo(() => user?.userId ?? user?.id ?? user?.sub, [user]);
   const selMemo = useMemo(() => (uidMemo ? SelectedBabyService.get(uidMemo) : null), [uidMemo]);
 
-  // คำนวณเวลาที่แสดงบนหน้าจอทุก 1 วิ
+  // ✅ คำนวณเวลาแสดงผลทุก 1 วิ
   useEffect(() => {
     const tick = () => {
       const base = sessionAccumulatedMs;
@@ -36,15 +36,7 @@ export const Save = () => {
     return () => clearInterval(id);
   }, [sessionAccumulatedMs, running]);
 
-  const todayKey = () => {
-    const d = new Date();
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, "0");
-    const day = String(d.getDate()).padStart(2, "0");
-    return `${y}-${m}-${day}`;
-  };
-
-  // โหลดข้อมูลที่บันทึกไว้ของวันปัจจุบัน (จาก local history)
+  // ✅ โหลดข้อมูลที่บันทึกไว้ของวันปัจจุบัน
   useEffect(() => {
     if (!uidMemo || !selMemo?.id) return;
     const list = FeedingService.getHistory(uidMemo, selMemo.id);
@@ -52,6 +44,16 @@ export const Save = () => {
     setBaseCountToday(Number(today?.count || 0));
     setBaseMinutesToday(Number(today?.minutes || 0));
   }, [uidMemo, selMemo?.id]);
+
+  // ✅ ฟังก์ชันสร้าง key สำหรับวัน (สำหรับเก็บใน localStorage)
+  const todayKey = () => {
+    const now = new Date();
+    const bangkokTime = new Date(now.getTime() + 7 * 60 * 60 * 1000);
+    const y = bangkokTime.getUTCFullYear();
+    const m = String(bangkokTime.getUTCMonth() + 1).padStart(2, "0");
+    const d = String(bangkokTime.getUTCDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  };
 
   const toggleTimer = () => {
     if (!running) {
@@ -101,7 +103,7 @@ export const Save = () => {
   };
 
   const handleSave = async () => {
-    if (saving) return; // กันกดซ้ำ
+    if (saving) return;
     const ok = await ensureLogin();
     if (!ok) return;
 
@@ -111,8 +113,6 @@ export const Save = () => {
     }
 
     const durationMinutes = Math.max(0, Math.round(sessionAccumulatedMs / 60000));
-
-    // บังคับส่งนาที > 0 เสมอ
     if (durationMinutes <= 0) {
       info("เวลารวมต้องมากกว่า 0 นาที");
       return;
@@ -129,24 +129,35 @@ export const Save = () => {
     try {
       setSaving(true);
 
-      // บันทึก “วันนี้”
-      await BabyService.recordBabyFeeding(babyId, { durationMinutes, userId: uid });
+      // ✅ สร้างวันที่ logDate จากเวลาปัจจุบัน (ISO string)
+     
 
-      // อัปเดต local history
+     
+
+      await BabyService.recordBabyFeeding(babyId, {
+        durationMinutes,
+        userId: uid,
+        logDate: new Date().toISOString(), // ✅ ส่งเป็น new Date() ISO string
+      });
+
+      // ✅ ใช้ todayKey สำหรับ local history
+      const todayKeyStr = todayKey();
+
       const merged = FeedingService.mergeToday(uid, babyId, {
-        date: todayKey(),
+        date: todayKeyStr,
         addCount: sessionCount,
         addMinutes: durationMinutes,
       });
-      const today = merged.find((r) => r.date === todayKey());
+
+      const today = merged.find((r) => r.date === todayKeyStr);
       setBaseCountToday(Number(today?.count || 0));
       setBaseMinutesToday(Number(today?.minutes || 0));
 
       success("บันทึกการให้นมสำเร็จ");
       resetTimer();
-      // ตรวจให้ตรงกับ route ของคุณ: "/suckingBreasts" vs "/sucklingBreasts"
       navigate("/suckingBreasts");
     } catch (e) {
+      console.error("❌ Error while saving:", e);
       const msg = e?.response?.data?.message || e?.message || "";
       info(msg || "บันทึกไม่สำเร็จ");
     } finally {
@@ -162,12 +173,13 @@ export const Save = () => {
             <CiCircleAlert className="w-[30px] h-[30px]" /> เช็คท่าอุ้มก่อนนะคะ 😊
           </button>
         </div>
-        {/* (ลบ element ที่ class แตกออก) */}
 
+        {/* ❗️ห้ามแตะ zone นี้ */}
         <div className="absolute -mt-170 mr-150 -translate-x-40 xs:-translate-x-10 text-3xl text-[#e3a9f1d7] xs:absolute xs:-mt-145 xs:mr-50 xs:text-3xl xs:text-[#e3a9f1d7]">close</div>
         <div className="absolute -mt-30 mr-150 text-3xl -translate-x-40 xs:-translate-x-10 *:text-[#e3a9f1d7] xs:absolute xs:-mt-35 xs:mr-50 xs:text-3xl xs:text-[#e3a9f1d7]">face</div>
         <div className="absolute -mt-170 -mr-150 text-3xl  translate-x-40 xs:translate-x-1 text-[#e3a9f1d7xs:absolute xs:-mt-145 xs:-ml-90 xs:text-3xl xs:text-[#e3a9f1d7]">straight</div>
         <div className="absolute -mt-30 -mr-150 text-3xl  translate-x-40 text-[#e3a9f1d7 xs:translate-x-1 xs:absolute xs:-mt-35 xs:-ml-90 xs:text-3xl xs:text-[#e3a9f1d7]">support</div>
+        {/* ❗️จบ zone ห้ามแตะ */}
 
         <div className="rounded-full bg-[#E2A9F1] w-[200px] h-[200px] flex items-center justify-center mt-4">
           <img src="/src/assets/save/breastfeeding.png" className="w-[144px] h-[144px]" />
@@ -188,10 +200,16 @@ export const Save = () => {
             <button onClick={resetTimer} className="btn btn-outline btn-sm ml-5">
               reset
             </button>
+            {/* ✅ ปุ่มเทส 1 นาที */}
+            <button
+              onClick={() => setSessionAccumulatedMs(60000)} // 60000ms = 1 นาที
+              className="btn btn-outline btn-sm ml-2"
+            >
+              เทส 1 นาที
+            </button>
           </div>
         </div>
 
-        {/* แสดงจำนวนครั้งและนาทีต่อวัน */}
         <div className="text-sm text-gray-600 mt-2">
           จำนวนครั้งวันนี้: {baseCountToday + sessionCount} ครั้ง, รวมเวลา:{" "}
           {Math.round((baseMinutesToday * 60000 + sessionAccumulatedMs) / 60000)} นาที

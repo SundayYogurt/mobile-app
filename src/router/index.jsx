@@ -4,7 +4,7 @@ import { MainLayout } from "../layouts/MainLayout.jsx";
 import { Home } from "../pages/Home.jsx";
 import Knowledge from "../pages/Knowledge.jsx";
 import Food from "../pages/Food.jsx";
-import { Save } from "../pages/Save.jsx";
+import {Save}  from "../pages/Save.jsx";
 import BabyHealth from "../pages/BabyHealth.jsx";
 import Contact from "../pages/Contact.jsx";
 import FourStep from "../pages/FourStep.jsx";
@@ -43,7 +43,7 @@ const router = createBrowserRouter([
         path: "/save",
         element: (
           <RequireAuth Fallback={Unauthorized}>
-            <Save />
+            <Save/>
           </RequireAuth>
         ),
         handle: { title: "บันทึก", backTo: "/" },

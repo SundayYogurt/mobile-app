@@ -12,7 +12,6 @@ const EditProfile = () => {
 
   const [profile, setProfile] = useState({
     name: "",
-    birthday: "",
     educationLevel: "NONE",
     antenatal_visit_counts: "",
   });
@@ -100,20 +99,6 @@ const EditProfile = () => {
             type="text"
             name="name"
             value={profile.name || ""}
-            onChange={handleChange}
-            className="input input-bordered w-full rounded-lg border-pink-200 focus:border-pink-400"
-          />
-        </div>
-
-        {/* วันเกิด */}
-        <div>
-          <label className="block text-sm font-semibold text-gray-600 mb-1">
-            วันเกิด
-          </label>
-          <input
-            type="date"
-            name="birthday"
-            value={profile.birthday || ""}
             onChange={handleChange}
             className="input input-bordered w-full rounded-lg border-pink-200 focus:border-pink-400"
           />

@@ -221,7 +221,7 @@ if (allDates.length > 0) {
   const tableData = useMemo(
     () =>
       dailyRows.map((day, idx) => ({
-        วัน: day.dayLabel,
+        "อายุของทารก (วัน)": day.dayLabel,
         "รวมเวลานาทีต่อวัน": day.totalMinutes,
         "ครั้งต่อวัน": day.count,
         Action:
@@ -268,7 +268,7 @@ const graphData = useMemo(
       </Link>
 
       <BabyTable
-        columns={["วัน", "รวมเวลานาทีต่อวัน", "ครั้งต่อวัน", "Action"]}
+        columns={["อายุของทารก (วัน)", "รวมเวลานาทีต่อวัน", "ครั้งต่อวัน", "Action"]}
         data={tableData}
       />
 

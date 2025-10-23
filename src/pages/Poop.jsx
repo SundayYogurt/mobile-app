@@ -135,7 +135,7 @@ export const Poop = () => {
       </div>
 
       <BabyTable
-        columns={[{ key: "daysAt", label: "วัน" }, "จำนวนครั้ง", "Actions"]}
+        columns={[{ key: "daysAt", label: "อายุของทารก (วัน)" }, "จำนวนครั้ง", "Actions"]}
         data={tableData}
       />
 

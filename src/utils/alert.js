@@ -161,7 +161,7 @@ export async function registerAlert({
           <input id="swal-reg-confirm" class="swal2-input" placeholder="พิมพ์ซ้ำอีกครั้ง" type="password" autocomplete="new-password" />
           <span id="toggle-reg-confirm" class="eye-icon">👁️</span>
         </div>
-        <div class="ms-field">
+        <div class="ms-field" >
           <label for="swal-reg-education">ระดับการศึกษา</label>
           <select id="swal-reg-education" class="swal2-input">
             <option value="">เลือกระดับการศึกษา</option>
@@ -176,7 +176,7 @@ export async function registerAlert({
             <option value="OTHER">อื่นๆ</option>
           </select>
         </div>
-        <div class="ms-field">
+        <div class="ms-field hidden">
           <label for="swal-reg-birthday">วันเกิด</label>
           <input id="swal-reg-birthday" class="swal2-input" type="date" />
         </div>
@@ -218,13 +218,12 @@ export async function registerAlert({
       const nameInput = document.getElementById("swal-reg-name")?.value?.trim();
       const password = document.getElementById("swal-reg-password")?.value ?? "";
       const confirmPassword = document.getElementById("swal-reg-confirm")?.value ?? "";
-      const age = document.getElementById("swal-reg-age")?.value;
       const educationLevel = document.getElementById("swal-reg-education")?.value;
       const birthday = document.getElementById("swal-reg-birthday")?.value;
       const antenatal_visit_counts = document.getElementById("swal-reg-antenatal-visits")?.value;
 
 
-      if (!username || !password || !confirmPassword || !nameInput  || !educationLevel || !birthday || !antenatal_visit_counts) {
+      if (!username || !password || !confirmPassword || !nameInput  || !educationLevel || !antenatal_visit_counts) {
         Swal.showValidationMessage("กรุณากรอกข้อมูลให้ครบถ้วน");
         return false;
       }

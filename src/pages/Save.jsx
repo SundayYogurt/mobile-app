@@ -200,13 +200,13 @@ export const Save = () => {
             <button onClick={resetTimer} className="btn btn-outline btn-sm ml-5">
               reset
             </button>
-            {/* ✅ ปุ่มเทส 1 นาที
+            {/* ✅ ปุ่มเทส 1 นาที */}
             <button
               onClick={() => setSessionAccumulatedMs(60000)} // 60000ms = 1 นาที
               className="btn btn-outline btn-sm ml-2"
             >
               เทส 1 นาที
-            </button> */}
+            </button>
           </div>
         </div>
 

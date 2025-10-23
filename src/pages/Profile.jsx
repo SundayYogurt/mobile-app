@@ -54,11 +54,6 @@ const Profile = () => {
         </div>
 
         <div className="flex justify-between py-3 border-b border-pink-100">
-          <span className="font-semibold text-gray-600">อายุ</span>
-          <span className="text-gray-800">{profile?.age || "ไม่ระบุ"}</span>
-        </div>
-
-        <div className="flex justify-between py-3 border-b border-pink-100">
           <span className="font-semibold text-gray-600">ระดับการศึกษา</span>
           <span className="text-gray-800">
             {profile?.educationLevel || "ไม่ระบุ"}

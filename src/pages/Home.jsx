@@ -1,36 +1,27 @@
 import React, { useEffect } from "react";
 import LoginCarousel from "../components/LoginCarousel";
 import { Link } from "react-router";
-import { useAuthContext } from "../hooks/useAuth";
-import { notify } from "../utils/alert";
 
 export const Home = () => {
-  const { justLoggedIn, resetJustLoggedIn } = useAuthContext();
-
-  useEffect(() => {
-    if (justLoggedIn) {
-      notify({
-        title: "ทำแบบประเมินความรู้หลังคลอด",
-        html: `
-          <p>คลิกเพื่อทำแบบประเมิน</p>
-          <a href="https://docs.google.com/forms/d/e/1FAIpQLSeBhbm5PymqpM290yE0oMxX96Lbok2Gl4IkYpOKc_v_eaXHug/viewform?pli=1" target="_blank" rel="noopener noreferrer">
-            <button class="btn btn-primary mt-4">ไปที่แบบประเมิน</button>
-          </a>
-        `,
-        confirmText: "ปิด",
-      });
-      resetJustLoggedIn();
-    }
-  }, [justLoggedIn, resetJustLoggedIn]);
 
   return (
+<>
+    
     <div className="flex flex-col items-center justify-start mt-[-50px] h-auto">
       {/* ✅ Carousel อยู่ด้านบน */}
       <LoginCarousel />
 
       {/* ✅ ปุ่มต่อจาก Carousel */}
       <div className="w-full flex flex-col items-center justify-center mt-7 relative z-10 gap-5 px-6 max-w-[440px] mx-auto">
-        
+        <div className="grid grid-cols-2 gap-3 w-full">
+          <a href="https://docs.google.com/forms/d/e/1FAIpQLSd43VXRGRq-hzIVp4cVhS4KIPZhOrHCo5xa-prp19AC02H3IA/viewform" target="_blank">
+          <button className="btn rounded-xl bg-[#ee0e9850] w-full h-[70px] text-[20px] font-medium">แบบทดสอบถาม Pre-Test</button>
+          </a>
+         <a href="https://docs.google.com/forms/d/e/1FAIpQLSeBhbm5PymqpM290yE0oMxX96Lbok2Gl4IkYpOKc_v_eaXHug/viewform" target="_blank">
+          <button className="btn rounded-xl bg-[#e0569065] w-full h-[70px] text-[20px] font-medium">แบบทดสอบถาม Post-Test</button>
+          </a>
+          </div>
+         
         {/* ปุ่ม: บันทึก */}
         <Link to="/save" className="w-full">
           <div className="relative w-full flex justify-center items-center">
@@ -94,7 +85,12 @@ export const Home = () => {
             </button>
         </Link>
 
+          <a href="https://forms.gle/RqycqfVNc9ShmGSv5" target="_blank">
+          <button className="btn rounded-xl bg-[#ff459265] w-full h-[70px] text-[20px] font-medium">แบบประเมินความพึงพอใจ</button>
+          </a>
+
       </div>
     </div>
+    </>
   );
 };

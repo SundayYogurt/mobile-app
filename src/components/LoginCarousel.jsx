@@ -433,9 +433,12 @@ export default function LoginCarousel() {
             {slides[index].button}
           </motion.button>
         )}
+              <p className="text-xs text-gray-400 mt-3">
+        (ปัดซ้าย/ขวาเพื่อเปลี่ยนสไลด์)
+      </p>
       </div>
 
-      <div className="flex gap-2 mt-4">
+      <div className="flex gap-2 mb-5">
         {slides.map((slide, i) => (
           <div
             key={slide.id}
@@ -446,9 +449,7 @@ export default function LoginCarousel() {
         ))}
       </div>
 
-      <p className="text-xs text-gray-400 mt-3">
-        (ปัดซ้าย/ขวาเพื่อเปลี่ยนสไลด์)
-      </p>
+
     </div>
   );
 }

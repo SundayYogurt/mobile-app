@@ -23,7 +23,7 @@ export async function countPerDayAlert({
     showCancelButton: true,
     confirmButtonText: confirmText,
     cancelButtonText: cancelText,
-    confirmButtonColor: "#F5D8EB",
+    confirmButtonColor: "#C266A4",
     reverseButtons: true,
     showCloseButton: true,
     allowEscapeKey: true,

@@ -55,7 +55,6 @@ export const Poop = () => {
         return {
           daysAt: `วันที่ ${day}`,
           "จำนวนครั้ง": rowData.count,
-          "ผลวิเคราะห์": rowData.checkPoop || "-",
           Actions: (
             <button
               className="inline-flex items-center justify-center bg-gradient-to-r from-[#F5D8EB] to-[#F8CFE5] hover:from-[#f782c0] hover:to-[#ff6bbf] text-[#6C3B73] font-semibold text-xs px-3 py-[6px] rounded-full shadow-md transition-all whitespace-nowrap hover:scale-105 active:scale-95"
@@ -92,7 +91,6 @@ export const Poop = () => {
       return {
         daysAt: `วันที่ ${day}`,
         "จำนวนครั้ง": "-",
-        "ผลวิเคราะห์": "-",
         Actions: (
           <button
             className="inline-flex items-center justify-center bg-gradient-to-r from-[#F5D8EB] to-[#F8CFE5] hover:from-[#FF9ED1] hover:to-[#FF80C8] text-[#6C3B73] font-semibold text-xs px-3 py-[6px] rounded-full shadow-md transition-all whitespace-nowrap hover:scale-105 active:scale-95"
@@ -137,7 +135,7 @@ export const Poop = () => {
       </div>
 
       <BabyTable
-        columns={["daysAt", "จำนวนครั้ง", "ผลวิเคราะห์", "Actions"]}
+        columns={["daysAt", "จำนวนครั้ง", "Actions"]}
         data={tableData}
       />
 

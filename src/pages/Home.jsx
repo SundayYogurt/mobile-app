@@ -17,10 +17,10 @@ export const Home = () => {
       <div className="w-full flex flex-col items-center justify-center mt-7 relative z-10 gap-5 px-6 max-w-[440px] mx-auto">
         <div className="grid grid-cols-2 gap-3 w-full">
           <a href={user ? "https://docs.google.com/forms/d/e/1FAIpQLSd43VXRGRq-hzIVp4cVhS4KIPZhOrHCo5xa-prp19AC02H3IA/viewform" : "#"} target={user ? "_blank" : "_self"}>
-          <button className={`btn rounded-xl bg-[#ee0e9850] w-full h-[70px] text-[20px] font-medium ${!user ? 'opacity-50 cursor-not-allowed' : ''}`} disabled={!user}>แบบทดสอบถาม Pre-Test</button>
+          <button className={`btn rounded-xl bg-[#ee0e9850] w-full h-[70px] lg:text-[20px] xs:text-[15px] font-medium ${!user ? 'opacity-50 cursor-not-allowed' : ''}`} disabled={!user}>แบบทดสอบถาม Pre-Test</button>
           </a>
          <a href={user ? "https://docs.google.com/forms/d/e/1FAIpQLSeBhbm5PymqpM290yE0oMxX96Lbok2Gl4IkYpOKc_v_eaXHug/viewform" : "#"} target={user ? "_blank" : "_self"}>
-          <button className={`btn rounded-xl bg-[#e0569065] w-full h-[70px] text-[20px] font-medium ${!user ? 'opacity-50 cursor-not-allowed' : ''}`} disabled={!user}>แบบทดสอบถาม Post-Test</button>
+          <button className={`btn rounded-xl bg-[#e0569065] w-full h-[70px] lg:text-[20px] xs:text-[15px] font-medium ${!user ? 'opacity-50 cursor-not-allowed' : ''}`} disabled={!user}>แบบทดสอบถาม Post-Test</button>
           </a>
           </div>
          

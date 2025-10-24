@@ -6,7 +6,7 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "https://mom-sure-api.onrender.com/api/$1"
+      "destination": "https://mom-sure.onrender.com/api/$1"
     },
     {
       "source": "/(.*)",

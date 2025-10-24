@@ -4,6 +4,7 @@ import Cookies from "js-cookie"; // ✅ ต้อง import
 
 const resolveBaseURL = () => {
   const envBase = (import.meta.env.VITE_BASE_URL || "").trim();
+
   if (!envBase) return "";
 
   if (!/^https?:/i.test(envBase)) return envBase;

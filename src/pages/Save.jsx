@@ -18,13 +18,34 @@ export const Save = () => {
   const [baseCountToday, setBaseCountToday] = useState(0);
   const [baseMinutesToday, setBaseMinutesToday] = useState(0);
   const [saving, setSaving] = useState(false);
+  const [selectedDay, setSelectedDay] = useState(1); // ✅ อายุวันที่เลือก (1–14)
 
   const startAtRef = useRef(null);
 
   const uidMemo = useMemo(() => user?.userId ?? user?.id ?? user?.sub, [user]);
-  const selMemo = useMemo(() => (uidMemo ? SelectedBabyService.get(uidMemo) : null), [uidMemo]);
+  const selMemo = useMemo(
+    () => (uidMemo ? SelectedBabyService.get(uidMemo) : null),
+    [uidMemo]
+  );
 
-  // ✅ คำนวณเวลาแสดงผลทุก 1 วิ
+  // ✅ คำนวณวันที่จริงจากอายุวัน (วันที่ 1 = วันเกิด)
+  const calcDateFromDaysAt = (birthDate, daysAt) => {
+    if (!birthDate) return new Date().toISOString().split("T")[0];
+    const date = new Date(birthDate);
+    date.setDate(date.getDate() + (daysAt - 1));
+    return date.toISOString().split("T")[0];
+  };
+
+  const todayKey = () => {
+    const now = new Date();
+    const bangkokTime = new Date(now.getTime() + 7 * 60 * 60 * 1000);
+    const y = bangkokTime.getUTCFullYear();
+    const m = String(bangkokTime.getUTCMonth() + 1).padStart(2, "0");
+    const d = String(bangkokTime.getUTCDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  };
+
+  // ✅ ตั้งค่า timer
   useEffect(() => {
     const tick = () => {
       const base = sessionAccumulatedMs;
@@ -35,25 +56,6 @@ export const Save = () => {
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
   }, [sessionAccumulatedMs, running]);
-
-  // ✅ โหลดข้อมูลที่บันทึกไว้ของวันปัจจุบัน
-  useEffect(() => {
-    if (!uidMemo || !selMemo?.id) return;
-    const list = FeedingService.getHistory(uidMemo, selMemo.id);
-    const today = list.find((r) => r.date === todayKey());
-    setBaseCountToday(Number(today?.count || 0));
-    setBaseMinutesToday(Number(today?.minutes || 0));
-  }, [uidMemo, selMemo?.id]);
-
-  // ✅ ฟังก์ชันสร้าง key สำหรับวัน (สำหรับเก็บใน localStorage)
-  const todayKey = () => {
-    const now = new Date();
-    const bangkokTime = new Date(now.getTime() + 7 * 60 * 60 * 1000);
-    const y = bangkokTime.getUTCFullYear();
-    const m = String(bangkokTime.getUTCMonth() + 1).padStart(2, "0");
-    const d = String(bangkokTime.getUTCDate()).padStart(2, "0");
-    return `${y}-${m}-${d}`;
-  };
 
   const toggleTimer = () => {
     if (!running) {
@@ -129,102 +131,98 @@ export const Save = () => {
     try {
       setSaving(true);
 
-      // ✅ สร้างวันที่ logDate จากเวลาปัจจุบัน (ISO string)
-     
-
-     
+      const logDate = calcDateFromDaysAt(selected?.birthday, selectedDay);
 
       await BabyService.recordBabyFeeding(babyId, {
         durationMinutes,
         userId: uid,
-        logDate: new Date().toISOString(), // ✅ ส่งเป็น new Date() ISO string
+        daysAt: selectedDay,
+        logDate,
       });
-
-      // ✅ ใช้ todayKey สำหรับ local history
-      const todayKeyStr = todayKey();
-
-      const merged = FeedingService.mergeToday(uid, babyId, {
-        date: todayKeyStr,
-        addCount: sessionCount,
-        addMinutes: durationMinutes,
-      });
-
-      const today = merged.find((r) => r.date === todayKeyStr);
-      setBaseCountToday(Number(today?.count || 0));
-      setBaseMinutesToday(Number(today?.minutes || 0));
 
       success("บันทึกการให้นมสำเร็จ");
       resetTimer();
       navigate("/suckingBreasts");
     } catch (e) {
       console.error("❌ Error while saving:", e);
-      const msg = e?.response?.data?.message || e?.message || "";
-      info(msg || "บันทึกไม่สำเร็จ");
+      info(e?.response?.data?.message || e.message || "บันทึกไม่สำเร็จ");
     } finally {
       setSaving(false);
     }
   };
 
   return (
-    <>
-      <div className="w-full flex flex-col items-center justify-center mt-7 relative z-10 gap-4">
-        <div className="relative">
-          <button className="btn rounded-xl bg-white w-fit text-[22px] font-medium shadow-xl btn-ghost h-[52px]">
-            <CiCircleAlert className="w-[30px] h-[30px]" /> เช็คท่าอุ้มก่อนนะคะ 😊
+    <div className="w-full flex flex-col items-center justify-center mt-7 relative z-10 gap-4 px-6">
+      <div className="relative">
+        <button className="btn rounded-xl bg-white w-fit text-[22px] font-medium shadow-xl btn-ghost h-[52px]">
+          <CiCircleAlert className="w-[30px] h-[30px]" /> เช็คท่าอุ้มก่อนนะคะ 😊
+        </button>
+      </div>
+
+      {/* รูปภาพ */}
+      <div className="rounded-full bg-[#E2A9F1] w-[200px] h-[200px] flex items-center justify-center mt-4 shadow-md">
+        <img src="/src/assets/save/breastfeeding.png" className="w-[144px] h-[144px]" />
+      </div>
+
+      <h1 className="text-[30px] font-medium mt-6 text-[#6C3B73]">บันทึกการดูดนม</h1>
+
+      {/* ✅ เลือกอายุวัน */}
+      <div className="flex flex-col items-center gap-2 mt-2">
+        <label className="text-gray-600 text-sm">เลือกอายุของทารก (วัน)</label>
+        <select
+          value={selectedDay}
+          onChange={(e) => setSelectedDay(Number(e.target.value))}
+          className="select select-bordered rounded-xl border-[#E2A9F1] focus:border-[#FF66C4] w-[220px] text-center text-[#6C3B73]"
+        >
+          {Array.from({ length: 14 }, (_, i) => (
+            <option key={i + 1} value={i + 1}>
+              วันที่ {i + 1}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* ปุ่ม start/stop */}
+      <button
+        onClick={toggleTimer}
+        className="btn hover:bg-[#e3a9f1d7] text-[30px] rounded-full bg-[#EFB8FF] w-[100px] h-[100px] flex items-center justify-center mt-5 font-light shadow-md"
+      >
+        {running ? "stop" : "start"}
+      </button>
+
+      {/* เวลา */}
+      <div className="flex flex-col gap-3 items-center mt-5">
+        <div className="flex border border-gray-300 rounded-md w-[260px] h-[61px] items-center justify-center text-2xl tracking-wide">
+          {formatTime(displayMs)}
+          <button onClick={resetTimer} className="btn btn-outline btn-sm ml-3">
+            reset
           </button>
         </div>
 
-        {/* ❗️ห้ามแตะ zone นี้ */}
-        <div className="absolute -mt-170 mr-150 -translate-x-40 xs:-translate-x-10 text-3xl text-[#e3a9f1d7] xs:absolute xs:-mt-145 xs:mr-50 xs:text-3xl xs:text-[#e3a9f1d7]">close</div>
-        <div className="absolute -mt-30 mr-150 text-3xl -translate-x-40 xs:-translate-x-10 *:text-[#e3a9f1d7] xs:absolute xs:-mt-35 xs:mr-50 xs:text-3xl xs:text-[#e3a9f1d7]">face</div>
-        <div className="absolute -mt-170 -mr-150 text-3xl  translate-x-40 xs:translate-x-1 text-[#e3a9f1d7xs:absolute xs:-mt-145 xs:-ml-90 xs:text-3xl xs:text-[#e3a9f1d7]">straight</div>
-        <div className="absolute -mt-30 -mr-150 text-3xl  translate-x-40 text-[#e3a9f1d7 xs:translate-x-1 xs:absolute xs:-mt-35 xs:-ml-90 xs:text-3xl xs:text-[#e3a9f1d7]">support</div>
-        {/* ❗️จบ zone ห้ามแตะ */}
-
-        <div className="rounded-full bg-[#E2A9F1] w-[200px] h-[200px] flex items-center justify-center mt-4">
-          <img src="/src/assets/save/breastfeeding.png" className="w-[144px] h-[144px]" />
-        </div>
-
-        <h1 className="text-[30px] font-medium mt-6">บันทึกการดูดนม</h1>
-
+        {/* ปุ่มเทส 1 นาที */}
         <button
-          onClick={toggleTimer}
-          className="btn hover:bg-[#e3a9f1d7] text-[30px] rounded-full bg-[#EFB8FF] w-[100px] h-[100px] flex items-center justify-center mt-5 font-light"
+          onClick={() => setSessionAccumulatedMs(60000)}
+          className="btn btn-xs bg-[#FFB6E1] text-[#6C3B73] hover:bg-[#ff8fc8] border-none rounded-full shadow-sm"
         >
-          {running ? "stop" : "start"}
-        </button>
-
-        <div className="flex gap-3 items-center mt-5">
-          <div className="flex border border-gray-300 rounded-md w-[228px] h-[61px] items-center justify-center text-2xl tracking-wide">
-            {formatTime(displayMs)}
-            <button onClick={resetTimer} className="btn btn-outline btn-sm ml-5">
-              reset
-            </button>
-            {/* ✅ ปุ่มเทส 1 นาที
-            <button
-              onClick={() => setSessionAccumulatedMs(60000)} // 60000ms = 1 นาที
-              className="btn btn-outline btn-sm ml-2"
-            >
-              เทส 1 นาที
-            </button> */}
-          </div>
-        </div>
-
-        <div className="text-sm text-gray-600 mt-2">
-          จำนวนครั้งวันนี้: {baseCountToday + sessionCount} ครั้ง, รวมเวลา:{" "}
-          {Math.round((baseMinutesToday * 60000 + sessionAccumulatedMs) / 60000)} นาที
-        </div>
-
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className={`btn hover:bg-[#e3a9f1d7] text-[30px] font-light rounded-[20px] w-[400px] h-[50px] flex items-center justify-center mt-5 text-white ${
-            saving ? "bg-gray-400 cursor-not-allowed" : "bg-[#EFB8FF]"
-          }`}
-        >
-          {saving ? "กำลังบันทึก..." : "บันทึก"}
+          เทส 1 นาที
         </button>
       </div>
-    </>
+
+      <div className="text-sm text-gray-600 mt-2">
+        อายุวันที่เลือก: {selectedDay} วัน
+      </div>
+
+      <button
+        onClick={handleSave}
+        disabled={saving}
+        className={`btn text-[24px] font-medium rounded-[20px] w-[380px] h-[50px] flex items-center justify-center mt-5 text-white transition-all ${
+          saving
+            ? "bg-gray-400 cursor-not-allowed"
+            : "bg-gradient-to-r from-[#EFB8FF] to-[#FF66C4] hover:from-[#f782c0] hover:to-[#ff6bbf]"
+        }`}
+      >
+        {saving ? "กำลังบันทึก..." : "บันทึก"}
+      </button>
+    </div>
   );
 };

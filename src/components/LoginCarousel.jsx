@@ -413,7 +413,10 @@ export default function LoginCarousel() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
           >
+            <p className="text-xs text-gray-400 mt-3">
+        (ปัดซ้าย/ขวาเพื่อเปลี่ยนสไลด์)</p>
             {slides[index].subtitle ? (
+              
               <div className="text-sm text-gray-500">{slides[index].subtitle}</div>
             ) : null}
             {slides[index].description ? (
@@ -424,7 +427,7 @@ export default function LoginCarousel() {
           <motion.button
             key={`btn-${slides[index].id}`}
             onClick={slides[index].onClick}
-            className="mt-10 btn bg-[#E2A9F1B2] text-white px-6 py-2 rounded-full text-sm font-medium hover:bg-[#e3a9f1d7] transition z-10"
+            className="mt-10 btn bg-[#D884E6] text-white px-6 py-2 rounded-full text-sm font-medium hover:bg-[#C86CD7] transition z-10"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
@@ -433,9 +436,7 @@ export default function LoginCarousel() {
             {slides[index].button}
           </motion.button>
         )}
-              <p className="text-xs text-gray-400 mt-3">
-        (ปัดซ้าย/ขวาเพื่อเปลี่ยนสไลด์)
-      </p>
+
       </div>
 
       <div className="flex gap-2 mb-5">

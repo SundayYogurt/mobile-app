@@ -3,7 +3,7 @@ import TokenService from "./TokenService";
 
 const API_URL = import.meta.env.VITE_BABY_API;
 
-/** ดึง userId จาก TokenService */
+/** ✅ ดึง userId จาก TokenService */
 const getUserId = () => {
   const u = TokenService.getUser?.() || {};
   return u.userId ?? u.id ?? u.sub;
@@ -32,6 +32,8 @@ const getAllByUserId = async (userId) => {
 /* ---------------------------------------------------
  🍽️ Feeding
 --------------------------------------------------- */
+
+/** ➕ เพิ่มข้อมูลให้นม */
 const createBabyFeedingLog = async (babyId, payload = {}) => {
   if (!babyId) throw new Error("missing babyId");
   const userId = payload.userId ?? getUserId();
@@ -40,29 +42,36 @@ const createBabyFeedingLog = async (babyId, payload = {}) => {
     Number(payload.durationMinutes ?? payload.minutes ?? payload.duration ?? payload.value ?? 0) || 0;
   if (durationMinutes <= 0) throw new Error("invalid durationMinutes");
 
-  const body = {
-    durationMinutes,
-    userId,
-    logDate: payload.logDate ?? new Date().toISOString(),
-  };
+  const daysAt = Number(payload.daysAt ?? 1);
 
-  console.log("🍼 ส่งไป backend:", body);
+  const body = { durationMinutes, userId, daysAt };
+
+  console.log("🍼 เพิ่มข้อมูลให้นม:", body);
   return api.post(`${API_URL}/${babyId}/recordBabyFeeding`, body, { withCredentials: false });
 };
 
+/** alias */
 const recordBabyFeeding = createBabyFeedingLog;
 
+/** ✏️ อัปเดตข้อมูลให้นม */
 const updateBabyFeedingLog = async (babyId, logId, payload = {}) => {
   if (!babyId || !logId) throw new Error("missing babyId or logId");
   const userId = payload.userId ?? getUserId();
+
   const durationMinutes =
     Number(payload.durationMinutes ?? payload.minutes ?? payload.duration ?? payload.value ?? 0) || 0;
   if (durationMinutes <= 0) throw new Error("invalid durationMinutes");
 
-  const body = { durationMinutes, userId };
+  const totalFeeding =
+    Number(payload.totalFeeding ?? payload.logCount ?? payload.count ?? 0) || 0;
+
+  const body = { durationMinutes, totalFeeding, userId };
+
+  console.log("✏️ อัปเดตข้อมูลให้นม:", body);
   return api.put(`${API_URL}/${babyId}/feeding/${logId}`, body, { withCredentials: false });
 };
 
+/** 🗑️ ลบข้อมูลให้นม */
 const deleteBabyFeedingLog = async (babyId, logId) => {
   if (!babyId || !logId) throw new Error("missing babyId or logId");
   const userId = getUserId();
@@ -71,6 +80,7 @@ const deleteBabyFeedingLog = async (babyId, logId) => {
   return api.delete(`${API_URL}/${babyId}/feeding/${logId}`, cfg);
 };
 
+/** 📊 ดึงข้อมูลให้นมทั้งหมด */
 const showBabyFeedingLogs = async (babyId) => {
   if (!babyId) throw new Error("missing babyId");
   return api.get(`${API_URL}/showBabyFeedingLogs/${babyId}`, { withCredentials: false });
@@ -96,7 +106,6 @@ const recordBabyWeight = async (babyId, payload = {}) => {
     userId,
     babyId,
     daysAt: payload.daysAt ?? 1,
-    logDate: payload.logDate ?? new Date().toISOString(),
   };
 
   console.log("⚖️ ส่งข้อมูลน้ำหนัก:", body);
@@ -115,7 +124,6 @@ const updateBabyWeightLog = async (babyId, logId, payload = {}) => {
     userId,
     babyId,
     daysAt: payload.daysAt ?? 1,
-    logDate: payload.logDate ?? new Date().toISOString(),
   };
 
   console.log("✏️ อัปเดตน้ำหนัก:", body);
@@ -134,17 +142,18 @@ const recordBabyPoop = async (babyId, payload = {}) => {
   if (!babyId) throw new Error("missing babyId");
   const userId = payload.userId ?? getUserId();
 
-  const c =
-    Number(payload.totalPoop ?? payload.count ?? payload.times ?? payload.value ?? payload.poopCount ?? payload.poops) ||
-    0;
-  if (c <= 0) throw new Error("invalid poop count");
+  const totalPoop =
+    Number(
+      payload.totalPoop ??
+        payload.count ??
+        payload.times ??
+        payload.value ??
+        payload.poopCount ??
+        payload.poops
+    ) || 0;
+  if (totalPoop <= 0) throw new Error("invalid poop count");
 
-  const body = {
-    totalPoop: c,
-    userId,
-    daysAt: payload.daysAt ?? 1,
-    logDate: payload.logDate ?? new Date().toISOString(),
-  };
+  const body = { totalPoop, userId, daysAt: payload.daysAt ?? 1 };
 
   console.log("💩 ส่งข้อมูลอุจจาระ:", body);
   return api.post(`${API_URL}/${babyId}/recordBabyPoop`, body, { withCredentials: false });
@@ -154,17 +163,18 @@ const updateBabyPoopLog = async (babyId, logId, payload = {}) => {
   if (!babyId || !logId) throw new Error("missing babyId or logId");
   const userId = payload.userId ?? getUserId();
 
-  const c =
-    Number(payload.totalPoop ?? payload.count ?? payload.times ?? payload.value ?? payload.poopCount ?? payload.poops) ||
-    0;
-  if (c <= 0) throw new Error("invalid poop count");
+  const totalPoop =
+    Number(
+      payload.totalPoop ??
+        payload.count ??
+        payload.times ??
+        payload.value ??
+        payload.poopCount ??
+        payload.poops
+    ) || 0;
+  if (totalPoop <= 0) throw new Error("invalid poop count");
 
-  const body = {
-    totalPoop: c,
-    userId,
-    daysAt: payload.daysAt ?? 1,
-    logDate: payload.logDate ?? new Date().toISOString(),
-  };
+  const body = { totalPoop, userId, daysAt: payload.daysAt ?? 1 };
 
   console.log("✏️ อัปเดตอุจจาระ:", body);
   return api.put(`${API_URL}/${babyId}/poop/${logId}`, body, { withCredentials: false });
@@ -182,17 +192,18 @@ const recordBabyPeeing = async (babyId, payload = {}) => {
   if (!babyId) throw new Error("missing babyId");
   const userId = payload.userId ?? getUserId();
 
-  const c =
-    Number(payload.totalPee ?? payload.count ?? payload.times ?? payload.value ?? payload.peeCount ?? payload.pees) ||
-    0;
-  if (c <= 0) throw new Error("invalid pee count");
+  const totalPee =
+    Number(
+      payload.totalPee ??
+        payload.count ??
+        payload.times ??
+        payload.value ??
+        payload.peeCount ??
+        payload.pees
+    ) || 0;
+  if (totalPee <= 0) throw new Error("invalid pee count");
 
-  const body = {
-    totalPee: c,
-    userId,
-    daysAt: payload.daysAt ?? 1,
-    logDate: payload.logDate ?? new Date().toISOString(),
-  };
+  const body = { totalPee, userId, daysAt: payload.daysAt ?? 1 };
 
   console.log("💧 ส่งข้อมูลปัสสาวะ:", body);
   return api.post(`${API_URL}/${babyId}/recordBabyPeeing`, body, { withCredentials: false });
@@ -202,17 +213,18 @@ const updateBabyPeeLog = async (babyId, logId, payload = {}) => {
   if (!babyId || !logId) throw new Error("missing babyId or logId");
   const userId = payload.userId ?? getUserId();
 
-  const c =
-    Number(payload.totalPee ?? payload.count ?? payload.times ?? payload.value ?? payload.peeCount ?? payload.pees) ||
-    0;
-  if (c <= 0) throw new Error("invalid pee count");
+  const totalPee =
+    Number(
+      payload.totalPee ??
+        payload.count ??
+        payload.times ??
+        payload.value ??
+        payload.peeCount ??
+        payload.pees
+    ) || 0;
+  if (totalPee <= 0) throw new Error("invalid pee count");
 
-  const body = {
-    totalPee: c,
-    userId,
-    daysAt: payload.daysAt ?? 1,
-    logDate: payload.logDate ?? new Date().toISOString(),
-  };
+  const body = { totalPee, userId, daysAt: payload.daysAt ?? 1 };
 
   console.log("✏️ อัปเดตปัสสาวะ:", body);
   return api.put(`${API_URL}/${babyId}/pee/${logId}`, body, { withCredentials: false });

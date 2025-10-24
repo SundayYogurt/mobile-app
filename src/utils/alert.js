@@ -6,9 +6,10 @@ export function notify({ title = "", text = "", html = "", confirmText = "ตก
   return Swal.fire({
     title,
     text,
+    width: '80%',
+    customClass: { popup: 'swal2-responsive' },
     html: html || text, // Use html if provided, otherwise use text
-    confirmButtonText: confirmText,
-    confirmButtonColor: "#F5D8EB",
+    confirmButtonColor: "#D884E6",
     backdrop: true,
     showCloseButton: true,
     allowEscapeKey: true,
@@ -36,20 +37,22 @@ export async function loginAlert({
 } = {}) {
   const result = await Swal.fire({
     title,
+    width: '80%',
+    customClass: { popup: 'swal2-responsive' },
     html: `
       <form id="swal-login-form" class="swal2-content ms-wrap" style="margin-top:4px" autocomplete="off">
         <style>
           .ms-wrap .swal2-input {
-            width: 100% !important;
-            box-sizing: border-box;
+            box-sizing: border-box !important;
+            width: calc(100% - 20px) !important; /* Adjust width to account for padding */
+            padding: 8px 38px 8px 10px !important;
             height: 38px;
-            padding: 8px 38px 8px 10px;
             font-size: 14px;
-            margin: 4px 0 6px;
+            margin: 4px 10px 6px !important;
           }
           .ms-wrap .eye-icon {
             position: absolute;
-            right: 12px;
+            right: 20px;
             top: 50%;
             transform: translateY(-50%);
             cursor: pointer;
@@ -57,6 +60,10 @@ export async function loginAlert({
           }
           .ms-wrap .swal2-input-wrapper {
             position: relative;
+            margin: 0 10px;
+          }
+          .ms-wrap label {
+            margin-left: 10px !important;
           }
         </style>
         <input id="swal-login-username" name="username" class="swal2-input" placeholder="ชื่อผู้ใช้" type="text" autocomplete="username" />
@@ -66,7 +73,7 @@ export async function loginAlert({
         </div>
         ${
           showRemember
-            ? '<label style="display:flex;gap:6px;align-items:center;justify-content:flex-start;margin:4px 2px 0"><input id="swal-login-remember" type="checkbox" checked /> <span style="font-size:0.9rem">จดจำฉัน</span></label>'
+            ? '<label style="display:flex;gap:6px;align-items:center;justify-content:flex-start;margin:4px 10px 0 !important"><input id="swal-login-remember" type="checkbox" checked /> <span style="font-size:0.9rem">จดจำฉัน</span></label>'
             : ""
         }
       </form>
@@ -86,8 +93,7 @@ export async function loginAlert({
     showCancelButton: true,
     confirmButtonText: confirmText,
     cancelButtonText: cancelText,
-    confirmButtonColor: "#F5D8EB",
-    reverseButtons: true,
+    confirmButtonColor: "#D884E6",
     showCloseButton: true,
     allowEscapeKey: true,
     allowOutsideClick: () => !Swal.isLoading(),
@@ -116,6 +122,8 @@ export async function registerAlert({
 } = {}) {
   const result = await Swal.fire({
     title,
+    width: '80%',
+    customClass: { popup: 'swal2-responsive' },
     html: `
       <form id="swal-register-form" class="swal2-content ms-wrap" style="margin-top:4px" autocomplete="off">
         <style>
@@ -125,18 +133,19 @@ export async function registerAlert({
             margin-bottom:4px;
             font-size:14px;
             color:#F0A4D6;
+            margin-left: 10px; /* Added margin-left */
           }
           .ms-wrap .swal2-input {
-            width: 100% !important;
-            box-sizing: border-box;
+            box-sizing: border-box !important;
+            width: calc(100% - 20px) !important; /* Adjust width to account for padding */
             height: 38px;
-            padding: 8px 38px 8px 10px;
+            padding: 8px 38px 8px 10px !important;
             font-size: 14px;
-            margin: 2px 0 4px;
+            margin: 2px 10px 4px !important; /* Adjusted margin */
           }
           .eye-icon {
             position: absolute;
-            right: 12px;
+            right: 20px;
             top: 62%;
             transform: translateY(-50%);
             cursor: pointer;
@@ -208,7 +217,7 @@ export async function registerAlert({
     showCancelButton: true,
     confirmButtonText: confirmText,
     cancelButtonText: cancelText,
-    confirmButtonColor: "#F5D8EB",
+    confirmButtonColor: "#D884E6",
     showCloseButton: true,
     reverseButtons: true,
     allowEscapeKey: true,

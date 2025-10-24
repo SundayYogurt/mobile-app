@@ -160,10 +160,10 @@ export const Save = () => {
       </div>
 <div className="absolute  flex items-center justify-center">
 
-  <div className="absolute -top-85 left-30 text-2xl text-[#e3a9f1d7]">straight</div>
-  <div className="absolute bottom-25 left-30 text-2xl text-[#e3a9f1d7]">face</div>
+  <div className="absolute -top-85 left-25 text-2xl text-[#e3a9f1d7]">straight</div>
+  <div className="absolute bottom-25 left-25 text-2xl text-[#e3a9f1d7]">support</div>
   <div className="absolute -top-85 right-30 text-2xl text-[#e3a9f1d7]">close</div>
-  <div className="absolute bottom-25 right-30 text-2xl text-[#e3a9f1d7]">support</div>
+  <div className="absolute bottom-25 right-30 text-2xl text-[#e3a9f1d7]">face</div>
 
   {/* เนื้อหาตรงกลาง */}
   {/* <YourCenterContentHere /> */}

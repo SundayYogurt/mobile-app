@@ -199,13 +199,13 @@ export const Save = () => {
           </button>
         </div>
 
-        {/* ปุ่มเทส 1 นาที */}
+        {/* ปุ่มเทส 1 นาที
         <button
           onClick={() => setSessionAccumulatedMs(60000)}
           className="btn btn-xs bg-[#FFB6E1] text-[#6C3B73] hover:bg-[#ff8fc8] border-none rounded-full shadow-sm"
         >
           เทส 1 นาที
-        </button>
+        </button> */}
       </div>
 
       <div className="text-sm text-gray-600 mt-2">

@@ -8,12 +8,14 @@ export async function registerBabyAlert({
 } = {}) {
   const result = await Swal.fire({
     title,
+    width: '80%',
+    customClass: { popup: 'swal2-responsive' },
     html: `
       <div class="swal2-content ms-wrap" style="margin-top:8px; text-align:left;">
         <style>
           .ms-wrap .ms-field { margin-top: 8px; }
-          .ms-wrap .ms-field label { display:block; margin-bottom:4px; font-size:14px; color:#F0A4D6; }
-          .ms-wrap .swal2-input { width: 100% !important; box-sizing: border-box; height: 38px; padding: 8px 10px; font-size: 14px; margin: 4px 0 6px; }
+          .ms-wrap .ms-field label { display:block; margin-bottom:4px; font-size:14px; color:#F0A4D6; margin-left: 10px; }
+          .ms-wrap .swal2-input { box-sizing: border-box !important; width: calc(100% - 20px) !important; height: 38px; padding: 8px 10px !important; font-size: 14px; margin: 4px 10px 6px !important; }
           .ms-wrap .ms-row { display:flex; gap:10px; }
           .ms-wrap .ms-col { flex:1; min-width:0; }
         </style>

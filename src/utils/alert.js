@@ -2,12 +2,14 @@
 import Swal from "sweetalert2";
 
 // ฟังก์ชันแจ้งเตือนพื้นฐาน
-export function notify({ title = "", text = "", confirmText = "ตกลง" } = {}) {
+export function notify({ title = "", text = "", html = "", confirmText = "ตกลง" } = {}) {
   return Swal.fire({
     title,
     text,
-    confirmButtonText: confirmText,
-    confirmButtonColor: "#F5D8EB",
+    width: '80%',
+    customClass: { popup: 'swal2-responsive' },
+    html: html || text, // Use html if provided, otherwise use text
+    confirmButtonColor: "#D884E6",
     backdrop: true,
     showCloseButton: true,
     allowEscapeKey: true,
@@ -35,20 +37,22 @@ export async function loginAlert({
 } = {}) {
   const result = await Swal.fire({
     title,
+    width: '80%',
+    customClass: { popup: 'swal2-responsive' },
     html: `
       <form id="swal-login-form" class="swal2-content ms-wrap" style="margin-top:4px" autocomplete="off">
         <style>
           .ms-wrap .swal2-input {
-            width: 100% !important;
-            box-sizing: border-box;
+            box-sizing: border-box !important;
+            width: calc(100% - 20px) !important; /* Adjust width to account for padding */
+            padding: 8px 38px 8px 10px !important;
             height: 38px;
-            padding: 8px 38px 8px 10px;
             font-size: 14px;
-            margin: 4px 0 6px;
+            margin: 4px 10px 6px !important;
           }
           .ms-wrap .eye-icon {
             position: absolute;
-            right: 12px;
+            right: 20px;
             top: 50%;
             transform: translateY(-50%);
             cursor: pointer;
@@ -56,6 +60,10 @@ export async function loginAlert({
           }
           .ms-wrap .swal2-input-wrapper {
             position: relative;
+            margin: 0 10px;
+          }
+          .ms-wrap label {
+            margin-left: 10px !important;
           }
         </style>
         <input id="swal-login-username" name="username" class="swal2-input" placeholder="ชื่อผู้ใช้" type="text" autocomplete="username" />
@@ -65,7 +73,7 @@ export async function loginAlert({
         </div>
         ${
           showRemember
-            ? '<label style="display:flex;gap:6px;align-items:center;justify-content:flex-start;margin:4px 2px 0"><input id="swal-login-remember" type="checkbox" checked /> <span style="font-size:0.9rem">จดจำฉัน</span></label>'
+            ? '<label style="display:flex;gap:6px;align-items:center;justify-content:flex-start;margin:4px 10px 0 !important"><input id="swal-login-remember" type="checkbox" checked /> <span style="font-size:0.9rem">จดจำฉัน</span></label>'
             : ""
         }
       </form>
@@ -85,8 +93,7 @@ export async function loginAlert({
     showCancelButton: true,
     confirmButtonText: confirmText,
     cancelButtonText: cancelText,
-    confirmButtonColor: "#F5D8EB",
-    reverseButtons: true,
+    confirmButtonColor: "#D884E6",
     showCloseButton: true,
     allowEscapeKey: true,
     allowOutsideClick: () => !Swal.isLoading(),
@@ -115,6 +122,8 @@ export async function registerAlert({
 } = {}) {
   const result = await Swal.fire({
     title,
+    width: '80%',
+    customClass: { popup: 'swal2-responsive' },
     html: `
       <form id="swal-register-form" class="swal2-content ms-wrap" style="margin-top:4px" autocomplete="off">
         <style>
@@ -124,18 +133,19 @@ export async function registerAlert({
             margin-bottom:4px;
             font-size:14px;
             color:#F0A4D6;
+            margin-left: 10px; /* Added margin-left */
           }
           .ms-wrap .swal2-input {
-            width: 100% !important;
-            box-sizing: border-box;
+            box-sizing: border-box !important;
+            width: calc(100% - 20px) !important; /* Adjust width to account for padding */
             height: 38px;
-            padding: 8px 38px 8px 10px;
+            padding: 8px 38px 8px 10px !important;
             font-size: 14px;
-            margin: 2px 0 4px;
+            margin: 2px 10px 4px !important; /* Adjusted margin */
           }
           .eye-icon {
             position: absolute;
-            right: 12px;
+            right: 20px;
             top: 62%;
             transform: translateY(-50%);
             cursor: pointer;
@@ -159,6 +169,29 @@ export async function registerAlert({
           <label for="swal-reg-confirm">ยืนยันรหัสผ่าน</label>
           <input id="swal-reg-confirm" class="swal2-input" placeholder="พิมพ์ซ้ำอีกครั้ง" type="password" autocomplete="new-password" />
           <span id="toggle-reg-confirm" class="eye-icon">👁️</span>
+        </div>
+        <div class="ms-field" >
+          <label for="swal-reg-education">ระดับการศึกษา</label>
+          <select id="swal-reg-education" class="swal2-input">
+            <option value="">เลือกระดับการศึกษา</option>
+            <option value="NONE">ไม่เคยเรียนเลย</option>
+            <option value="PRIMARY">ประถมศึกษา</option>
+            <option value="SECONDARY">มัธยมต้น</option>
+            <option value="HIGH_SCHOOL">มัธยมปลาย</option>
+            <option value="VOCATIONAL">ปวช./ปวส.</option>
+            <option value="BACHELOR">ปริญญาตรี</option>
+            <option value="MASTER">ปริญญาโท</option>
+            <option value="DOCTORATE">ปริญญาเอก</option>
+            <option value="OTHER">อื่นๆ</option>
+          </select>
+        </div>
+        <div class="ms-field hidden">
+          <label for="swal-reg-birthday">วันเกิด</label>
+          <input id="swal-reg-birthday" class="swal2-input" type="date" />
+        </div>
+        <div class="ms-field">
+          <label for="swal-reg-antenatal-visits">จำนวนครั้งการฝากครรภ์</label>
+          <input id="swal-reg-antenatal-visits" class="swal2-input" placeholder="จำนวนครั้งการฝากครรภ์" type="number" />
         </div>
       </form>
     `,
@@ -184,7 +217,7 @@ export async function registerAlert({
     showCancelButton: true,
     confirmButtonText: confirmText,
     cancelButtonText: cancelText,
-    confirmButtonColor: "#F5D8EB",
+    confirmButtonColor: "#D884E6",
     showCloseButton: true,
     reverseButtons: true,
     allowEscapeKey: true,
@@ -194,9 +227,13 @@ export async function registerAlert({
       const nameInput = document.getElementById("swal-reg-name")?.value?.trim();
       const password = document.getElementById("swal-reg-password")?.value ?? "";
       const confirmPassword = document.getElementById("swal-reg-confirm")?.value ?? "";
+      const educationLevel = document.getElementById("swal-reg-education")?.value;
+      const birthday = document.getElementById("swal-reg-birthday")?.value;
+      const antenatal_visit_counts = document.getElementById("swal-reg-antenatal-visits")?.value;
 
-      if (!username || !password || !confirmPassword) {
-        Swal.showValidationMessage("กรอกข้อมูลให้ครบถ้วน (ชื่อผู้ใช้/รหัสผ่าน)");
+
+      if (!username || !password || !confirmPassword || !nameInput  || !educationLevel || !antenatal_visit_counts) {
+        Swal.showValidationMessage("กรุณากรอกข้อมูลให้ครบถ้วน");
         return false;
       }
 
@@ -216,7 +253,7 @@ export async function registerAlert({
       }
 
       const name = nameInput && nameInput.length > 0 ? nameInput : username;
-      return { username, name, password, confirmPassword };
+      return { username, name, password, confirmPassword, educationLevel, birthday, antenatal_visit_counts: Number(antenatal_visit_counts) };
     },
   });
 

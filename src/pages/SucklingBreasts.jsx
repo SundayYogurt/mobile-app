@@ -7,264 +7,320 @@ import SelectedBabyService from "../services/SelectedBabyService";
 import BabyService from "../services/BabyService";
 import { info, success } from "../utils/alert";
 import { countPerDayAlert } from "../utils/countAlert";
-
-const formatDateDisplay = (value) => {
-  const d = value instanceof Date ? value : new Date(value);
-  if (Number.isNaN(d.getTime())) return "-";
-  return d.toLocaleDateString("th-TH", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-};
-
-const formatDateKey = (date) =>
-  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(
-    date.getDate()
-  ).padStart(2, "0")}`;
+import Swal from "sweetalert2";
 
 const SucklingBreasts = () => {
   const { user } = useAuthContext();
-  const [dailyRows, setDailyRows] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [selection, setSelection] = useState({ userId: null, babyId: null });
+  const [rows, setRows] = useState([]);
+  const [feedingAlert, setFeedingAlert] = useState(null);
+  const [latestTimeInfo, setLatestTimeInfo] = useState(null);
 
+  const uid = useMemo(() => user?.userId ?? user?.id ?? user?.sub, [user]);
+  const selected = useMemo(() => (uid ? SelectedBabyService.get(uid) : null), [uid]);
+
+  // ✅ คำนวณ daysAt (จากวันเกิด → วันที่บันทึก)
+  const calcDaysAt = (birthDate, logDate) => {
+    if (!birthDate || !logDate) return 1;
+    const birth = new Date(birthDate);
+    const log = new Date(logDate);
+    const diff = Math.floor((log - birth) / (1000 * 60 * 60 * 24)) + 1;
+    return diff > 0 ? diff : 1;
+  };
+
+  // ✅ โหลดข้อมูล
   const loadLogs = useCallback(async () => {
-    const uid = user?.userId ?? user?.id ?? user?.sub;
-    if (!uid) {
-      setDailyRows([]);
-      setSelection({ userId: null, babyId: null });
+    if (!uid || !selected?.id) {
+      setRows([]);
       return;
     }
-
-    const sel = SelectedBabyService.get(uid);
-    if (!sel?.id) {
-      setDailyRows([]);
-      setSelection({ userId: uid, babyId: null });
-      return;
-    }
-
-    setSelection({ userId: uid, babyId: sel.id });
-    setLoading(true);
 
     try {
-      const res = await BabyService.showBabyFeedingLogs(sel.id);
+      const res = await BabyService.showBabyFeedingLogs(selected.id);
       const raw = Array.isArray(res?.data)
         ? res.data
         : Array.isArray(res?.data?.data)
         ? res.data.data
-        : Array.isArray(res?.data?.response)
-        ? res.data.response
         : [];
 
-      const byDay = new Map();
-
-      // รวมรายวัน (รองรับทั้งแบบรวมมาให้ และแบบรายครั้ง)
-      raw.forEach((item) => {
-        const dateKeyRaw = item?.date ?? item?.logDate ?? item?.createdAt ?? new Date();
-        const d = new Date(dateKeyRaw);
-        const key = formatDateKey(d);
-        const minutes =
-          Number(
-            item?.totalMinutes ??
-              item?.durationMinutes ??
-              item?.minutes ??
-              item?.duration ??
-              item?.value
-          ) || 0;
-        // ถ้า backend รวมรายวันมาให้แล้ว logCount จะเป็นจำนวนครั้งต่อวัน
-        const count = Number(item?.logCount ?? item?.count ?? 1);
-
-        const current = byDay.get(key) || { totalMinutes: 0, count: 0 };
-        current.totalMinutes += minutes;
-        current.count += count;
-        byDay.set(key, current);
-      });
-
-      // เตรียมช่วงย้อนหลัง 14 วัน (index 0 = วันนี้)
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-
-      const filled14 = Array.from({ length: 14 }, (_, idx) => {
-        const day = new Date(today);
-        day.setDate(today.getDate() - idx);
-        const key = formatDateKey(day);
-        const data = byDay.get(key);
+      const mapped = raw.map((it, idx) => {
+        const logDate = it?.date || it?.logDate || it?.createdAt || new Date();
         return {
-          dayLabel: `วันที่ ${idx + 1}`,
-          displayDate: formatDateDisplay(day),
-          dateKey: key,
-          totalMinutes: Math.round(data?.totalMinutes ?? 0),
-          count: data?.count ?? 0,
+          id: it?.id ?? it?._id ?? idx,
+          daysAt: Number(it?.daysAt) || calcDaysAt(selected?.birthday, logDate),
+          totalMinutes: Number(it?.totalMinutes ?? it?.durationMinutes ?? 0),
+          count: Number(it?.logCount ?? it?.totalFeeding ?? it?.count ?? 1),
+          logDate,
         };
       });
 
-      // ✅ ตรงตามโจทย์:
-      // - ถ้ายังวันแรก/ยังไม่มีข้อมูลเลย → แสดง "เฉพาะวันนี้" แถวเดียว
-      // - ถ้ามีข้อมูลแล้ว → แสดงตั้งแต่วันนี้ไปจนถึง "วันย้อนหลังที่เก่าสุดที่มีข้อมูล" (สูงสุด 14 วัน)
-      const lastIndexWithData = filled14.findIndex((r) => r.count > 0); // ใกล้วันนี้ที่สุดที่มีข้อมูล
-      let rowsToShow;
-      if (lastIndexWithData === -1) {
-        // ไม่มีข้อมูลเลย → โชว์วันนี้แถวเดียว
-        rowsToShow = [filled14[0]];
-      } else {
-        // มีข้อมูล → โชว์ช่วงวันนี้ถึงวันเก่าสุดที่มีข้อมูล (รวมวันว่างตรงกลางเพื่อให้เพิ่มย้อนหลังได้)
-        // หา index ที่ไกลที่สุดย้อนหลังที่มีข้อมูล
-        let farthest = 0;
-        for (let i = 0; i < filled14.length; i++) {
-          if (filled14[i].count > 0) farthest = Math.max(farthest, i);
-        }
-        rowsToShow = filled14.slice(0, farthest + 1);
-      }
+      setRows(mapped);
 
-      setDailyRows(rowsToShow);
-    } catch (error) {
-      setDailyRows([]);
-    } finally {
-      setLoading(false);
+      // ✅ หา "วันล่าสุด"
+      if (mapped.length > 0) {
+        const latestDay = [...mapped].sort((a, b) => b.daysAt - a.daysAt)[0];
+        const latestDayNum = latestDay.daysAt;
+        const latestCount = latestDay.count;
+        const latestMinutes = latestDay.totalMinutes;
+
+        // ✅ เวลาล่าสุด
+        const latestTime = new Date(latestDay.logDate).toLocaleTimeString("th-TH", {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+
+        setLatestTimeInfo({
+          time: latestTime,
+          minutes: latestMinutes,
+          count: latestCount,
+          day: latestDayNum,
+        });
+
+        // ✅ แจ้งเตือนจากวันล่าสุด
+        if (latestCount < 8) {
+          setFeedingAlert(
+            `ลูกดูดนมน้อยกว่า 8 ครั้งใน 24 ชั่วโมง (${latestCount} ครั้ง) อาจได้รับนมไม่เพียงพอ 💧`
+          );
+        } else if (latestCount > 12) {
+          setFeedingAlert(
+            `ลูกดูดนมบ่อยกว่า 12 ครั้งใน 24 ชั่วโมง (${latestCount} ครั้ง) แนะนำให้สังเกตการเข้าเต้าและการกลืนของลูก 👶`
+          );
+        } else {
+          setFeedingAlert(null);
+        }
+      } else {
+        setFeedingAlert(null);
+        setLatestTimeInfo(null);
+      }
+    } catch (err) {
+      console.error("❌ loadLogs error:", err);
+      setRows([]);
     }
-  }, [user]);
+  }, [uid, selected?.id]);
 
   useEffect(() => {
     loadLogs();
   }, [loadLogs]);
 
-  // เพิ่มย้อนหลังเท่านั้น
-  const handleAddPastDay = useCallback(
-    async (day) => {
-      if (!selection.babyId) {
-        info("กรุณาเลือกข้อมูลทารกก่อนเพิ่ม");
-        return;
-      }
+  // ✅ ตาราง 14 วัน (แสดงแน่ๆ)
+  const tableData = useMemo(() => {
+    const dataByDay = rows.reduce((acc, row) => {
+      acc[row.daysAt] = row;
+      return acc;
+    }, {});
 
-      if (day.count > 0) {
-        info("วันดังกล่าวมีข้อมูลแล้ว ไม่สามารถเพิ่มได้");
-        return;
-      }
-
-      const result = await countPerDayAlert({
-        title: `เพิ่มข้อมูลย้อนหลังวันที่ ${day.displayDate}`,
-        label: "กรอกเวลาปั๊มนม (นาที)",
-        placeholder: "เช่น 30",
-        confirmText: "เพิ่มข้อมูล",
-        cancelText: "ยกเลิก",
-        invalidMessage: "กรุณากรอกเวลามากกว่า 0 นาที",
-      });
-
-      if (!result) return;
-      const minutes = Number(result.count);
-      if (!Number.isFinite(minutes) || minutes <= 0) {
-        info("กรุณากรอกเวลามากกว่า 0 นาที");
-        return;
-      }
-
-      // ใช้เที่ยงวันเพื่อกัน timezone เพี้ยน
-      const createdAt = new Date(`${day.dateKey}T12:00:00`);
-
-      try {
-        await BabyService.createBabyFeedingLog(selection.babyId, {
-          durationMinutes: minutes,
-          userId: selection.userId,
-          createdAt,
-        });
-        success(`เพิ่มข้อมูลวันที่ ${day.displayDate} เรียบร้อย`);
-
-        // อัปเดตตารางทันที และขยายช่วงถ้าจำเป็น
-        setDailyRows((prev) => {
-          // อัปเดตแถวเดิม (วันนี้/วันนั้น)
-          const updated = prev.map((r) =>
-            r.dateKey === day.dateKey ? { ...r, totalMinutes: minutes, count: 1 } : r
-          );
-
-          // ถ้าตอนแรกมีแค่วันนี้แถวเดียว และผู้ใช้ไปเพิ่มวันก่อนหน้า (กรณีคุณปรับให้เห็นวันก่อนหน้า)
-          // สามารถขยายช่วงด้วยการ reload อีกที
-          return updated;
-        });
-
-        // sync กับ backend เพื่อดึงช่วงย้อนหลังที่ควรแสดงตอนนี้
-        loadLogs();
-      } catch (err) {
-        const msg = err?.response?.data?.message || err?.message || "ไม่สามารถเพิ่มข้อมูลได้";
-        info(msg);
-      }
-    },
-    [loadLogs, selection.babyId, selection.userId]
-  );
-
-  // แสดงตารางเสมอ (เพื่อให้วันแรกเห็นแถวเดียวได้)
-  const tableData = useMemo(
-    () =>
-      dailyRows.map((day, idx) => ({
-        วัน: day.dayLabel,
-        "รวมเวลานาทีต่อวัน": day.totalMinutes,
-        "ครั้งต่อวัน": day.count,
-        Action:
-          day.count === 0 ? (
+    const arr = [];
+    for (let i = 1; i <= 14; i++) {
+      const row = dataByDay[i];
+      if (row) {
+        arr.push({
+          daysAt: i,
+          "รวมเวลานาทีต่อวัน": row.totalMinutes,
+          "จำนวนครั้งต่อวัน": row.count,
+          Actions: (
             <button
-              className="btn btn-xs bg-[#E2A9F1] text-white"
-              onClick={() => handleAddPastDay(day)}
+              className="inline-flex items-center justify-center bg-gradient-to-r from-[#F5D8EB] to-[#F8CFE5] hover:from-[#f782c0] hover:to-[#ff6bbf] text-[#6C3B73] font-semibold text-xs sm:text-sm px-3 py-[6px] rounded-full shadow-md transition-all duration-200 whitespace-nowrap hover:scale-105 active:scale-95 w-full sm:w-auto"
+              onClick={async () => {
+                const { value: formValues } = await Swal.fire({
+                  title: `แก้ไขข้อมูลวันที่ ${i}`,
+                  width: "80%",
+                  position: "center",
+                  customClass: { popup: "swal2-responsive" },
+                  html: `
+                    <style>
+                      .swal2-input {
+                        box-sizing: border-box !important;
+                        width: calc(100% - 20px) !important;
+                        padding: 10px !important;
+                        margin: 6px 10px !important;
+                      }
+                      label {
+                        margin-left: 10px !important;
+                      }
+                    </style>
+                    <div style="display:flex;flex-direction:column;gap:10px;text-align:left">
+                      <label>รวมเวลานาทีต่อวัน:</label>
+                      <input id="swal-minutes" type="number" value="${row.totalMinutes}" class="swal2-input" placeholder="เช่น 30">
+                      <label>จำนวนครั้งต่อวัน:</label>
+                      <input id="swal-count" type="number" value="${row.count}" class="swal2-input" placeholder="เช่น 8">
+                    </div>
+                  `,
+                  focusConfirm: false,
+                  showCancelButton: true,
+                  confirmButtonText: "บันทึก",
+                  cancelButtonText: "ยกเลิก",
+                  confirmButtonColor: "#C266A4",
+                  cancelButtonColor: "#aaa",
+                  preConfirm: () => {
+                    const minutes = document.getElementById("swal-minutes").value;
+                    const count = document.getElementById("swal-count").value;
+                    if (!minutes || !count || minutes <= 0 || count <= 0) {
+                      Swal.showValidationMessage("กรุณากรอกข้อมูลให้ครบและถูกต้อง");
+                      return false;
+                    }
+                    return { minutes: Number(minutes), count: Number(count) };
+                  },
+                });
+
+                if (!formValues) return;
+
+                try {
+                  await BabyService.updateBabyFeedingLog(selected.id, row.id, {
+                    durationMinutes: formValues.minutes,
+                    totalFeeding: formValues.count,
+                    userId: uid,
+                  });
+                  await loadLogs();
+                  success("อัปเดตข้อมูลเรียบร้อยแล้ว");
+                } catch (err) {
+                  console.error("❌ update error:", err);
+                  info("อัปเดตไม่สำเร็จ");
+                }
+              }}
             >
-              {idx === 0 ? "บันทึกวันนี้" : "เพิ่มย้อนหลัง"}
+              แก้ไข
             </button>
-          ) : (
-            <span className="text-gray-400">—</span>
           ),
-      })),
-    [dailyRows, handleAddPastDay]
-  );
+        });
+      } else {
+        arr.push({
+          daysAt: i,
+          "รวมเวลานาทีต่อวัน": "-",
+          "จำนวนครั้งต่อวัน": "-",
+          Actions: (
+            <button
+              className="inline-flex items-center justify-center bg-gradient-to-r from-[#F5D8EB] to-[#F8CFE5] hover:from-[#FF9ED1] hover:to-[#FF80C8] text-[#6C3B73] font-semibold text-xs sm:text-sm px-3 py-[6px] rounded-full shadow-md transition-all duration-200 whitespace-nowrap hover:scale-105 active:scale-95"
+              onClick={async () => {
+                const result = await countPerDayAlert({
+                  title: `เพิ่มข้อมูลวันที่ ${i}`,
+                  label: "กรอกเวลาปั๊มนม (นาที)",
+                  placeholder: "เช่น 30",
+                  confirmText: "เพิ่มข้อมูล",
+                  cancelText: "ยกเลิก",
+                  invalidMessage: "กรุณากรอกเวลามากกว่า 0 นาที",
+                });
 
-  const hasData = dailyRows.some((d) => d.count > 0);
+                if (result) {
+                  try {
+                    await BabyService.createBabyFeedingLog(selected.id, {
+                      durationMinutes: result.count,
+                      userId: uid,
+                      daysAt: i,
+                    });
+                    await loadLogs();
+                    success("เพิ่มข้อมูลสำเร็จ");
+                  } catch (e) {
+                    console.error("❌ add feeding error:", e);
+                    info("เพิ่มไม่สำเร็จ");
+                  }
+                }
+              }}
+            >
+              💕 เพิ่มข้อมูล
+            </button>
+          ),
+        });
+      }
+    }
+    return arr;
+  }, [rows, uid, selected?.id, loadLogs]);
 
+  // ✅ ข้อมูลกราฟ
   const graphData = useMemo(
     () =>
-      hasData
-        ? [...dailyRows].reverse().map((d) => ({
-            name: d.displayDate,
-            minutes: d.totalMinutes,
-            times: d.count,
-          }))
-        : [],
-    [dailyRows, hasData]
+      rows.map((d) => ({
+        name: `วันที่ ${d.daysAt}`,
+        minutes: d.totalMinutes,
+        times: d.count,
+      })),
+    [rows]
   );
 
   return (
-    <div className="w-full flex flex-col items-center justify-center mt-10 gap-6 px-6 max-w-[440px] mx-auto">
-      {/* ข้อความแนะนำ */}
-      <div className="w-full max-w-[440px]">
-        <div className="alert alert-info bg-[#EAF4FF] text-[#0D47A1] rounded-xl shadow-sm">
-          <span>เริ่มบันทึกวันนี้ได้เลย และสามารถเพิ่มย้อนหลังเฉพาะวันว่างได้</span>
-        </div>
+    <div className="w-full flex flex-col items-center justify-center mt-8 relative z-10 gap-6 px-4 sm:px-6 md:px-10 max-w-[800px] mx-auto">
+      {/* หัวข้อ */}
+      <div className="flex flex-col items-center text-center mb-4 px-2">
+        <img src="/src/assets/love.png" alt="icon" className="w-14 h-14 sm:w-16 sm:h-16 animate-pulse mb-2" />
+        <h1 className="text-2xl sm:text-3xl font-bold text-[#FF66C4] drop-shadow-sm">
+          บันทึกการดูดนมแม่ 💕
+        </h1>
+        <p className="text-gray-500 text-sm sm:text-base mt-1">
+          จดบันทึกเวลาการให้นมลูกน้อย เพื่อดูพัฒนาการและสุขภาพของลูก 🌸
+        </p>
       </div>
 
-      {/* ปุ่มไปหน้าบันทึก */}
-      <Link to={"/save"}>
-        <button className="btn rounded-xl bg-[#F5D8EB] text-xl font-light w-full">
-          บันทึกการปั๊มนมเพิ่มเติม
+      {/* ปุ่มบันทึกเพิ่มเติม */}
+      <Link to={"/save"} className="w-full">
+        <button className="btn w-full text-sm sm:text-base rounded-xl bg-gradient-to-r from-[#F5D8EB] to-[#F8CFE5] hover:from-[#f782c0] hover:to-[#ff6bbf] text-[#6C3B73] font-semibold shadow-md transition-all hover:scale-105 py-3 sm:py-4">
+          🍼 บันทึกการปั๊มนมเพิ่มเติม
         </button>
       </Link>
 
-      {/* ตาราง (วันแรกจะแสดงแค่วันนี้แถวเดียว, ต่อๆ ไปจะขยายเท่าที่มีข้อมูลย้อนหลัง) */}
-      <BabyTable
-        columns={["วัน", "รวมเวลานาทีต่อวัน", "ครั้งต่อวัน", "Action"]}
-        data={tableData}
-      />
-
-      {loading && <div className="text-xs text-gray-400">กำลังโหลดข้อมูล...</div>}
-
-      {/* กราฟ แสดงเฉพาะเมื่อมีข้อมูลจริง */}
-      {hasData && (
-        <PinkGraph
-          data={graphData}
-          lines={[
-            { dataKey: "times", color: "#FF66C4", label: "ครั้งต่อวัน" },
-            { dataKey: "minutes", color: "#CB6CE6", label: "รวมนาทีต่อวัน" },
-          ]}
-        />
+      {/* 🕒 การให้นมล่าสุด */}
+      {latestTimeInfo && (
+        <div className="w-full text-center bg-[#FFF0F6] border border-pink-200 rounded-xl px-4 py-3 shadow-sm">
+          <p className="text-[#6C3B73] text-sm sm:text-base font-medium">
+            🕒 การให้นมล่าสุด (วันที่ {latestTimeInfo.day}):{" "}
+            <span className="font-semibold text-[#FF66C4]">
+              {latestTimeInfo.time}
+            </span>{" "}
+            รวม {latestTimeInfo.minutes} นาที ({latestTimeInfo.count} ครั้ง)
+          </p>
+        </div>
       )}
 
-      {/* ภาพประกอบ */}
-      <h1>ให้นมแม่สม่ำเสมอช่วยให้ทารกแข็งแรง</h1>
-      <img src="/src/assets/weight/milk.jpg" alt="breastfeeding info" />
+      {/* คำเตือน */}
+      {feedingAlert && (
+        <div className="w-full max-w-[640px] mx-auto px-2 sm:px-4">
+          <div className="text-[#6C3B73] text-sm sm:text-base font-semibold mb-2">คำเตือนสำคัญ</div>
+          <div
+            className={`rounded-lg px-4 py-3 text-sm sm:text-base shadow-sm mb-2 ${
+              feedingAlert.includes("น้อยกว่า")
+                ? "border-red-200 bg-red-50 text-red-700"
+                : "border-amber-200 bg-amber-50 text-amber-700"
+            }`}
+          >
+            <strong className="font-semibold">การดูดนม: </strong>
+            {feedingAlert}
+          </div>
+        </div>
+      )}
+
+      {/* ตาราง */}
+      <div className="w-full overflow-x-auto">
+        <div className="min-w-[360px] sm:min-w-full">
+          <BabyTable
+            columns={[
+              { key: "daysAt", label: "อายุของทารก (วัน)" },
+              "รวมเวลานาทีต่อวัน",
+              "จำนวนครั้งต่อวัน",
+              "Actions",
+            ]}
+            data={tableData}
+          />
+        </div>
+      </div>
+
+      {/* กราฟ */}
+      {rows.length > 0 && (
+        <div className="w-full sm:w-[90%] md:w-[80%] h-[300px] sm:h-[400px]">
+          <PinkGraph
+            data={graphData}
+            lines={[
+              { dataKey: "times", color: "#FF66C4", label: "จำนวนครั้งต่อวัน" },
+              { dataKey: "minutes", color: "#CB6CE6", label: "รวมนาทีต่อวัน" },
+            ]}
+          />
+        </div>
+      )}
+
+      <h1 className="text-base sm:text-lg text-[#E2A9F1] font-medium mt-4 text-center">
+        ให้นมแม่สม่ำเสมอช่วยให้ลูกน้อยแข็งแรง 💕
+      </h1>
+      <img
+        src="/src/assets/weight/milk.jpg"
+        alt="breastfeeding info"
+        className="rounded-lg shadow-md w-[90%] sm:w-[400px] md:w-[500px] mt-2"
+      />
     </div>
   );
 };

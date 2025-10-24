@@ -3,14 +3,13 @@ import { useAuthContext } from "../context/AuthContext";
 import SelectedBabyService from "../services/SelectedBabyService";
 import BabyService from "../services/BabyService";
 import { info } from "../utils/alert";
-import useWeightWarning from "../hooks/useWeightWarning";
+
 
 const Food = () => {
   const { user } = useAuthContext();
   const uid = useMemo(() => user?.userId ?? user?.id ?? user?.sub, [user]);
   const selected = useMemo(() => (uid ? SelectedBabyService.get(uid) : null), [uid]);
   const [poopWarning, setPoopWarning] = useState(false);
-  const weightWarning = useWeightWarning();
 
   useEffect(() => {
     const run = async () => {
@@ -92,7 +91,7 @@ const Food = () => {
             className="absolute w-[91px] h-[91px] rotate-20 -mt-18 right-1 xs:w-[71px] xs:h-[71px]"
             src="/src/assets/knowledge/salad.png"
           ></img>
-          <button className="btn rounded-xl bg-[#ff66c450] w-full h-[70px] text-[30px] font-medium justify-center items-center">
+          <button className="btn rounded-xl bg-[#ff66c450] w-full h-[70px] text-[30px] font-medium justify-center items-center xs:text-[22px]">
             อาหารสำหรับ มารดาหลังคลอด{" "}
           </button>
 

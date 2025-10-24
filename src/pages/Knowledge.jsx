@@ -66,6 +66,15 @@ const Knowledge = () => {
             </button>
           </div>
         </Link>
+
+                {/* ปุ่ม: สัญญาณหิวของทารก */}
+        <Link to="/baby-sign" className="w-full">
+          <div className="relative w-full flex justify-center items-center">
+            <button className="btn rounded-xl bg-[#bc45dd70] w-full h-[70px] text-[26px] font-medium xs:text-[20px]">
+              สัญญาณหิวของทารก
+            </button>
+          </div>
+        </Link>
       </div>
     </>
   );

@@ -49,7 +49,6 @@ export default function VideoPlayer({ src, poster }) {
     }
   };
 
-  // ✅ ใช้ tap/คลิก เพื่อสลับการแสดง UI — ถ้าไม่แตะ = ซ่อน
   const toggleMobileUi = () => {
     setShowUi((prev) => {
       const next = !prev;
@@ -57,7 +56,6 @@ export default function VideoPlayer({ src, poster }) {
         if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
       } catch {}
       if (next) {
-        // ซ่อนอัตโนมัติหลัง 3 วินาที
         hideTimerRef.current = setTimeout(() => setShowUi(false), 3000);
       }
       return next;
@@ -71,7 +69,6 @@ export default function VideoPlayer({ src, poster }) {
     v.currentTime = Math.min(Math.max(0, t), dur);
   };
   const skip = (d) => seek(current + d);
-
   const onScrub = (e) => seek(Number(e.target.value));
 
   const toggleMute = () => {
@@ -128,6 +125,7 @@ export default function VideoPlayer({ src, poster }) {
       onMouseEnter={() => setShowUi(true)}
       onMouseLeave={() => setShowUi(false)}
     >
+      {/* 🎥 วิดีโอ */}
       <video
         ref={videoRef}
         src={src}
@@ -138,10 +136,38 @@ export default function VideoPlayer({ src, poster }) {
         onTouchStart={toggleMobileUi}
       />
 
-      {/* ✅ แถบควบคุม: ซ่อนถ้าไม่ hover หรือไม่ tap */}
+      {/* ▶️ ปุ่มเล่นกลางจอ */}
+      {!playing && (
+        <button
+          onClick={togglePlay}
+          className="absolute inset-0 flex items-center justify-center 
+                     bg-black/20 hover:bg-black/40 transition rounded-xl"
+        >
+          <div className="w-16 h-16 flex items-center justify-center rounded-full bg-pink-500 hover:bg-pink-600 shadow-md">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="white"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="white"
+              className="w-8 h-8 translate-x-[2px]"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M5.25 5.653v12.694c0 .865.935 1.406 1.685.978l10.45-6.347a1.125 1.125 0 000-1.956L6.935 4.021A1.125 1.125 0 005.25 4.999z"
+              />
+            </svg>
+          </div>
+        </button>
+      )}
+
+      {/* 🎛️ แถบควบคุม */}
       <div
         className={`absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/60 to-transparent rounded-b-xl transition-opacity duration-200 ${
-          showUi ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+          showUi
+            ? "opacity-100 pointer-events-auto"
+            : "opacity-0 pointer-events-none"
         }`}
       >
         <input
@@ -156,10 +182,7 @@ export default function VideoPlayer({ src, poster }) {
 
         <div className="mt-2 flex items-center justify-between text-white text-sm">
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => skip(-10)}
-              className="btn btn-ghost btn-xs text-white"
-            >
+            <button onClick={() => skip(-10)} className="btn btn-ghost btn-xs text-white">
               -10s
             </button>
             <button
@@ -168,10 +191,7 @@ export default function VideoPlayer({ src, poster }) {
             >
               {playing ? "Pause" : "Play"}
             </button>
-            <button
-              onClick={() => skip(10)}
-              className="btn btn-ghost btn-xs text-white"
-            >
+            <button onClick={() => skip(10)} className="btn btn-ghost btn-xs text-white">
               +10s
             </button>
             <span className="ml-2 tabular-nums">
@@ -180,10 +200,7 @@ export default function VideoPlayer({ src, poster }) {
           </div>
 
           <div className="flex items-center gap-2">
-            <button
-              onClick={toggleMute}
-              className="btn btn-ghost btn-xs text-white"
-            >
+            <button onClick={toggleMute} className="btn btn-ghost btn-xs text-white">
               {muted || volume === 0 ? "Unmute" : "Mute"}
             </button>
             <input
@@ -195,16 +212,10 @@ export default function VideoPlayer({ src, poster }) {
               onChange={(e) => changeVolume(Number(e.target.value))}
               className="range range-xs w-24 accent-pink-300"
             />
-            <button
-              onClick={cycleRate}
-              className="btn btn-ghost btn-xs text-white"
-            >
+            <button onClick={cycleRate} className="btn btn-ghost btn-xs text-white">
               {rate}x
             </button>
-            <button
-              onClick={toggleFullscreen}
-              className="btn btn-ghost btn-xs text-white"
-            >
+            <button onClick={toggleFullscreen} className="btn btn-ghost btn-xs text-white">
               Full
             </button>
           </div>

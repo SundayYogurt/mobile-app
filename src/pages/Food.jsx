@@ -115,7 +115,7 @@ const Food = () => {
           </div>
 
           <button className="btn rounded-xl bg-[#F5EBFF] w-fit h-13 text-[22px] justify-start font-medium  mt-10">
-            อาหารบำรุงน้ำนมได{" "}
+            อาหารบำรุงน้ำนม{" "}
           </button>
 
           <div

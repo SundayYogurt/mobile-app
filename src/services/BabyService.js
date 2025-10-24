@@ -46,7 +46,7 @@ const createBabyFeedingLog = async (babyId, payload = {}) => {
 
   const body = { durationMinutes, userId, daysAt };
 
-  console.log("🍼 เพิ่มข้อมูลให้นม:", body);
+
   return api.post(`${API_URL}/${babyId}/recordBabyFeeding`, body, { withCredentials: false });
 };
 
@@ -67,7 +67,6 @@ const updateBabyFeedingLog = async (babyId, logId, payload = {}) => {
 
   const body = { durationMinutes, totalFeeding, userId };
 
-  console.log("✏️ อัปเดตข้อมูลให้นม:", body);
   return api.put(`${API_URL}/${babyId}/feeding/${logId}`, body, { withCredentials: false });
 };
 
@@ -108,7 +107,7 @@ const recordBabyWeight = async (babyId, payload = {}) => {
     daysAt: payload.daysAt ?? 1,
   };
 
-  console.log("⚖️ ส่งข้อมูลน้ำหนัก:", body);
+
   return api.post(`${API_URL}/${babyId}/recordBabyWeight`, body, { withCredentials: false });
 };
 
@@ -126,7 +125,7 @@ const updateBabyWeightLog = async (babyId, logId, payload = {}) => {
     daysAt: payload.daysAt ?? 1,
   };
 
-  console.log("✏️ อัปเดตน้ำหนัก:", body);
+
   return api.put(`${API_URL}/${babyId}/weight/${logId}`, body, { withCredentials: false });
 };
 
@@ -155,7 +154,7 @@ const recordBabyPoop = async (babyId, payload = {}) => {
 
   const body = { totalPoop, userId, daysAt: payload.daysAt ?? 1 };
 
-  console.log("💩 ส่งข้อมูลอุจจาระ:", body);
+
   return api.post(`${API_URL}/${babyId}/recordBabyPoop`, body, { withCredentials: false });
 };
 
@@ -176,7 +175,7 @@ const updateBabyPoopLog = async (babyId, logId, payload = {}) => {
 
   const body = { totalPoop, userId, daysAt: payload.daysAt ?? 1 };
 
-  console.log("✏️ อัปเดตอุจจาระ:", body);
+
   return api.put(`${API_URL}/${babyId}/poop/${logId}`, body, { withCredentials: false });
 };
 
@@ -205,7 +204,6 @@ const recordBabyPeeing = async (babyId, payload = {}) => {
 
   const body = { totalPee, userId, daysAt: payload.daysAt ?? 1 };
 
-  console.log("💧 ส่งข้อมูลปัสสาวะ:", body);
   return api.post(`${API_URL}/${babyId}/recordBabyPeeing`, body, { withCredentials: false });
 };
 
@@ -226,7 +224,6 @@ const updateBabyPeeLog = async (babyId, logId, payload = {}) => {
 
   const body = { totalPee, userId, daysAt: payload.daysAt ?? 1 };
 
-  console.log("✏️ อัปเดตปัสสาวะ:", body);
   return api.put(`${API_URL}/${babyId}/pee/${logId}`, body, { withCredentials: false });
 };
 

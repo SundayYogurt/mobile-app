@@ -92,7 +92,7 @@ const SucklingBreasts = () => {
         setLatestTimeInfo(null);
       }
     } catch (err) {
-      console.error("❌ loadLogs error:", err);
+     
       setRows([]);
     }
   }, [uid, selected?.id]);
@@ -172,7 +172,7 @@ const SucklingBreasts = () => {
                   await loadLogs();
                   success("อัปเดตข้อมูลเรียบร้อยแล้ว");
                 } catch (err) {
-                  console.error("❌ update error:", err);
+                
                   info("อัปเดตไม่สำเร็จ");
                 }
               }}
@@ -209,7 +209,7 @@ const SucklingBreasts = () => {
                     await loadLogs();
                     success("เพิ่มข้อมูลสำเร็จ");
                   } catch (e) {
-                    console.error("❌ add feeding error:", e);
+                  
                     info("เพิ่มไม่สำเร็จ");
                   }
                 }

@@ -24,7 +24,6 @@ const EditProfile = () => {
         const response = await UserProfileService.showUserProfile(id);
         if (response.status === 200) {
           setProfile(response?.data);
-            console.log(response)
         }
       } catch (error) {
         Swal.fire({

@@ -46,7 +46,7 @@ export default defineConfig({
     proxy: {
       // Proxy API calls during development to avoid CORS/preflight issues
       '/api': {
-        target: 'https://mom-sure-api.onrender.com',
+        target: 'https://mom-sure.onrender.com',
         changeOrigin: true,
         secure: true,
       },

@@ -144,7 +144,7 @@ export const Save = () => {
       resetTimer();
       navigate("/suckingBreasts");
     } catch (e) {
-      console.error("❌ Error while saving:", e);
+    
       info(e?.response?.data?.message || e.message || "บันทึกไม่สำเร็จ");
     } finally {
       setSaving(false);

@@ -9,7 +9,7 @@ export const Navbar = () => {
   const backTo = current?.handle?.backTo
   const navigate = useNavigate?.()
   return (
-    <div className="navbar shadow-sm bg-[#F5D8EB]">
+    <div className="navbar shadow-sm bg-[#f08ece]">
       {backTo ? (
         <button
           type="button"

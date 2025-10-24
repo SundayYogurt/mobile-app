@@ -1,46 +1,62 @@
-import api from "./api"; // <— axios instance มี interceptor token, header ฯลฯ
+import api from "./api";
+import TokenService from "./TokenService";
 
-const API_URL =
-  import.meta.env.VITE_ANNOUNCE_API ||
-  "https://condo-swift.onrender.com/api/v1/announces";
+const API_URL = import.meta.env.VITE_AUTH_API;
 
-// 🏗 CRUD หลัก
-const createAnnounce = async (Announce) => api.post(`${API_URL}/addAnnounce`, Announce);
-const getAllAnnounce = async () => api.get(`${API_URL}/`);
-const updateAnnounce = async (id, Announce) => api.put(`${API_URL}/${id}`, Announce);
-const getAnnounceById = async (id) => api.get(`${API_URL}/${id}`);
-const deleteAnnounce = async (id) => api.delete(`${API_URL}/${id}`);
+const register = async (usernameOrPayload, name, password, confirmPassword, educationLevel, birthday, antenatal_visit_counts) => {
+  const payload =
+    typeof usernameOrPayload === "object" && usernameOrPayload !== null
+      ? usernameOrPayload
+      : { username: usernameOrPayload, name, password, confirmPassword,educationLevel, birthday, antenatal_visit_counts };
 
-// 🔍 Announce Detail
-const showAnnounceDetail = async (id) => api.get(`${API_URL}/showAnnounceDetails/${id}`);
-
-// 📦 รวม category ทั้งหมด
-const getAnnounceWithCategory = async () => api.get(`${API_URL}/showAnnounceWithCategory`);
-
-// 🧠 ฟังก์ชันใหม่ — สำหรับหน้า /filter
-const getFilterAnnounceWithAgent = async (arg1, arg2, arg3, arg4) => {
-  if (typeof arg1 === 'object' && arg1 !== null) {
-    const { keyword, filter, type, bedroomCount, minPrice, maxPrice, page = 0, size = 8 } = arg1;
-    const params = { keyword, type: type ?? filter, bedroomCount, minPrice, maxPrice, page, size };
-    return await api.get(`${API_URL}/filterAnnounceWithAgent`, { params });
+  if (password !== confirmPassword) {
+    throw new Error("รหัสผ่านและยืนยันรหัสผ่านไม่ตรงกัน");
   }
-  const keyword = arg1;
-  const filter = arg2;
-  const page = arg3 ?? 0;
-  const size = arg4 ?? 8;
-  return await api.get(`${API_URL}/filterAnnounceWithAgent`, { params: { keyword, type: filter, page, size } });
+
+  const response = await api.post(`${API_URL}/register`, payload, { withCredentials: false });
+  return response.data;
 };
 
-// ✅ export ฟังก์ชันทั้งหมดไว้ให้เรียกง่าย
-const AnnounceService = {
-  getAllAnnounce,
-  deleteAnnounce,
-  createAnnounce,
-  updateAnnounce,
-  getAnnounceById,
-  showAnnounceDetail,
-  getAnnounceWithCategory,
-  getFilterAnnounceWithAgent,
+
+const login = async (username, password) => {
+  const response = await api.post(
+    `${API_URL}/login`,
+    { username, password },
+    { withCredentials: false }
+  );
+
+  // ✅ รองรับหลายรูปแบบคีย์ token จาก backend
+  const data = response.data || {};
+  const token = data.Token || data.token || data.Token;
+  const tokenType = data.tokenType || data.type || "Bearer";
+  const userId = data.userId || data.id || data.user?.id;
+
+  if (!token) {
+    throw new Error("ไม่พบ Token จาก backend");
+  }
+
+  // ✅ แนบคีย์ Token แบบ normalize ให้ชั้นบนใช้ได้เสมอ
+  response.data.Token = token;
+  response.data.tokenType = tokenType;
+  if (userId !== undefined) response.data.userId = userId;
+
+  // ✅ เก็บ token ลง TokenService (cookie 'user') เพื่อใช้งานอื่น ๆ ได้ด้วย
+  TokenService.setUser({ Token: token, tokenType, userId });
+
+  return response;
 };
 
-export default AnnounceService;
+const logout = () => {
+  TokenService.removeUser();
+};
+
+const getUserProfile = async (userId) => {
+  if (!userId) {
+    throw new Error("User ID is required to fetch profile.");
+  }
+  const response = await api.get(`${API_URL}/profile/${userId}`, { withCredentials: false });
+  return response.data;
+};
+
+const AuthService = { register, login, logout, getUserProfile };
+export default AuthService;

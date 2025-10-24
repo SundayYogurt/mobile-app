@@ -1,13 +1,13 @@
-﻿import Swal from "sweetalert2";
+import Swal from "sweetalert2";
 
-// Generic 1-input alert for count per day
-// Returns { count } as number (>0)
-export async function countPerDayAlert({
-  title = "จำนวนครั้ง/วัน",
-  label = "กรอกจำนวนครั้งต่อวัน",
-  placeholder = "เช่น 6",
-  confirmText = "ยืนยัน",
+export async function urineAlert({
+  title = "บันทึกปัสสาวะ",
+  label = "จำนวนครั้งที่ปัสสาวะ",
+  placeholder = "เช่น 5",
+  confirmText = "บันทึก",
   cancelText = "ยกเลิก",
+  invalidMessage = "กรุณากรอกจำนวนครั้งที่ปัสสาวะให้ถูกต้อง",
+  inputValue = null,
 } = {}) {
   const result = await Swal.fire({
     title,
@@ -25,7 +25,7 @@ export async function countPerDayAlert({
       </style>
       <div class="swal2-content" style="margin-top:6px;text-align:center">
         <label for="swal-count" style="display:block;font-size:0.9rem;margin:6px 1.2em 2px;color:#555">${label}</label>
-        <input id="swal-count" class="swal2-input" placeholder="${placeholder}" type="number" inputmode="numeric" min="1" />
+        <input id="swal-count" class="swal2-input" placeholder="${placeholder}" type="number" inputmode="numeric" min="0" value="${inputValue !== null ? inputValue : ''}" />
       </div>
     `,
     showClass: { popup: 'swal2-slide-up-show' },
@@ -39,15 +39,11 @@ export async function countPerDayAlert({
     showCloseButton: true,
     allowEscapeKey: true,
     allowOutsideClick: () => !Swal.isLoading(),
-    didOpen: () => {
-      const titleEl = Swal.getTitle();
-      if (titleEl) titleEl.style.color = "#F0A4D6";
-    },
     preConfirm: () => {
       const val = /** @type {HTMLInputElement} */ (document.getElementById("swal-count"))?.value;
       const num = val ? Number(val) : null;
-      if (!num || num <= 0) {
-        Swal.showValidationMessage("กรุณากรอกจำนวนครั้งต่อวันให้ถูกต้อง");
+      if (!num || num < 0) {
+        Swal.showValidationMessage(invalidMessage);
         return false;
       }
       return { count: num };

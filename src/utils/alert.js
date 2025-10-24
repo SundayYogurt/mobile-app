@@ -1,12 +1,18 @@
+// 📁 src/utils/alert.js
 import Swal from "sweetalert2";
 
-export function notify({ title = "", text = "", confirmText = "ตกลง" } = {}) {
+// ฟังก์ชันแจ้งเตือนพื้นฐาน
+export function notify({ title = "", text = "", html = "", confirmText = "ตกลง" } = {}) {
   return Swal.fire({
     title,
     text,
-    confirmButtonText: confirmText,
-    confirmButtonColor: "#F5D8EB",
+    width: '80%',
+    customClass: { popup: 'swal2-responsive' },
+    html: html || text, // Use html if provided, otherwise use text
+    confirmButtonColor: "#D884E6",
     backdrop: true,
+    showCloseButton: true,
+    allowEscapeKey: true,
     didOpen: () => {
       const titleEl = Swal.getTitle();
       if (titleEl) titleEl.style.color = "#F0A4D6";
@@ -22,9 +28,7 @@ export function info(message) {
   return notify({ title: "แจ้งเตือน", text: message });
 }
 
-// แสดง Alert ฟอร์มเข้าสู่ระบบ
-// คืนค่า Promise ที่ resolve เป็น { email, password, remember } เมื่อกดยืนยัน
-// หรือ resolve เป็น null เมื่อกดยกเลิก/ปิดหน้าต่าง
+// ✅ ฟอร์มเข้าสู่ระบบ
 export async function loginAlert({
   title = "เข้าสู่ระบบ",
   confirmText = "เข้าสู่ระบบ",
@@ -33,51 +37,84 @@ export async function loginAlert({
 } = {}) {
   const result = await Swal.fire({
     title,
+    width: '80%',
+    customClass: { popup: 'swal2-responsive' },
     html: `
-      <div class="swal2-content" style="margin-top:6px">
-        <input id="swal-login-email" class="swal2-input" placeholder="อีเมล" type="email" />
-        <input id="swal-login-password" class="swal2-input" placeholder="รหัสผ่าน" type="password" />
-        ${showRemember ? '<label style="display:flex;gap:6px;align-items:center;justify-content:flex-start;margin:6px 1.2em 0"><input id="swal-login-remember" type="checkbox" checked /> <span style="font-size:0.9rem">จดจำฉัน</span></label>' : ''}
-      </div>
+      <form id="swal-login-form" class="swal2-content ms-wrap" style="margin-top:4px" autocomplete="off">
+        <style>
+          .ms-wrap .swal2-input {
+            box-sizing: border-box !important;
+            width: calc(100% - 20px) !important; /* Adjust width to account for padding */
+            padding: 8px 38px 8px 10px !important;
+            height: 38px;
+            font-size: 14px;
+            margin: 4px 10px 6px !important;
+          }
+          .ms-wrap .eye-icon {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            opacity: 0.6;
+          }
+          .ms-wrap .swal2-input-wrapper {
+            position: relative;
+            margin: 0 10px;
+          }
+          .ms-wrap label {
+            margin-left: 10px !important;
+          }
+        </style>
+        <input id="swal-login-username" name="username" class="swal2-input" placeholder="ชื่อผู้ใช้" type="text" autocomplete="username" />
+        <div class="swal2-input-wrapper">
+          <input id="swal-login-password" name="password" class="swal2-input" placeholder="รหัสผ่าน" type="password" autocomplete="current-password" />
+          <span id="toggle-login-pass" class="eye-icon">👁️</span>
+        </div>
+        ${
+          showRemember
+            ? '<label style="display:flex;gap:6px;align-items:center;justify-content:flex-start;margin:4px 10px 0 !important"><input id="swal-login-remember" type="checkbox" checked /> <span style="font-size:0.9rem">จดจำฉัน</span></label>'
+            : ""
+        }
+      </form>
     `,
+    didOpen: () => {
+      const titleEl = Swal.getTitle();
+      if (titleEl) titleEl.style.color = "#F0A4D6";
+      const toggle = document.getElementById("toggle-login-pass");
+      const pass = document.getElementById("swal-login-password");
+      toggle?.addEventListener("click", () => {
+        const show = pass.type === "password";
+        pass.type = show ? "text" : "password";
+        toggle.textContent = show ? "🙈" : "👁️";
+      });
+    },
     focusConfirm: false,
     showCancelButton: true,
     confirmButtonText: confirmText,
     cancelButtonText: cancelText,
-    confirmButtonColor: "#F5D8EB",
-    reverseButtons: true,
+    confirmButtonColor: "#D884E6",
+    showCloseButton: true,
+    allowEscapeKey: true,
     allowOutsideClick: () => !Swal.isLoading(),
-    didOpen: () => {
-      const titleEl = Swal.getTitle();
-      if (titleEl) titleEl.style.color = "#F0A4D6";
-    },
     preConfirm: () => {
-      const email = /** @type {HTMLInputElement} */ (document.getElementById("swal-login-email"))?.value?.trim();
-      const password = /** @type {HTMLInputElement} */ (document.getElementById("swal-login-password"))?.value ?? "";
-      const remember = /** @type {HTMLInputElement} */ (document.getElementById("swal-login-remember"))?.checked ?? false;
+      const username = document.getElementById("swal-login-username")?.value?.trim();
+      const password = document.getElementById("swal-login-password")?.value ?? "";
+      const remember = document.getElementById("swal-login-remember")?.checked ?? false;
 
-      if (!email || !password) {
-        Swal.showValidationMessage("กรอกอีเมลและรหัสผ่านให้ครบ");
+      if (!username || !password) {
+        Swal.showValidationMessage("กรอกชื่อผู้ใช้และรหัสผ่านให้ครบ");
         return false;
       }
-      // ตรวจสอบอีเมลเบื้องต้น
-      const ok = /.+@.+\..+/.test(email);
-      if (!ok) {
-        Swal.showValidationMessage("รูปแบบอีเมลไม่ถูกต้อง");
-        return false;
-      }
-      return { email, password, remember };
+      return { username, password, remember };
     },
   });
 
-  if (result.isConfirmed && result.value) {
-    return result.value;
-  }
+  if (result.isConfirmed && result.value) return result.value;
   return null;
 }
 
-// แสดง Alert ฟอร์มลงทะเบียน
-// คืนค่า Promise เป็น { firstName, lastName, password } เมื่อกดยืนยัน หรือ null เมื่อยกเลิก
+// ✅ ฟอร์มลงทะเบียนผู้ใช้ใหม่
 export async function registerAlert({
   title = "ลงทะเบียน",
   confirmText = "ลงทะเบียน",
@@ -85,43 +122,141 @@ export async function registerAlert({
 } = {}) {
   const result = await Swal.fire({
     title,
+    width: '80%',
+    customClass: { popup: 'swal2-responsive' },
     html: `
-      <div class="swal2-content" style="margin-top:6px">
-        <input id="swal-reg-firstname" class="swal2-input" placeholder="ชื่อ" type="text" />
-        <input id="swal-reg-lastname" class="swal2-input" placeholder="นามสกุล" type="text" />
-        <input id="swal-reg-password" class="swal2-input" placeholder="รหัสผ่าน" type="password" />
-      </div>
+      <form id="swal-register-form" class="swal2-content ms-wrap" style="margin-top:4px" autocomplete="off">
+        <style>
+          .ms-wrap .ms-field { margin-top: 8px; position: relative; }
+          .ms-wrap .ms-field label {
+            display:block;
+            margin-bottom:4px;
+            font-size:14px;
+            color:#F0A4D6;
+            margin-left: 10px; /* Added margin-left */
+          }
+          .ms-wrap .swal2-input {
+            box-sizing: border-box !important;
+            width: calc(100% - 20px) !important; /* Adjust width to account for padding */
+            height: 38px;
+            padding: 8px 38px 8px 10px !important;
+            font-size: 14px;
+            margin: 2px 10px 4px !important; /* Adjusted margin */
+          }
+          .eye-icon {
+            position: absolute;
+            right: 20px;
+            top: 62%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            opacity: 0.6;
+          }
+        </style>
+        <div class="ms-field">
+          <label for="swal-reg-username">ชื่อผู้ใช้ (จำเป็น)</label>
+          <input id="swal-reg-username" class="swal2-input" placeholder="เช่น momsure01" type="text" autocomplete="username" />
+        </div>
+        <div class="ms-field">
+          <label for="swal-reg-name">ชื่อที่แสดง (จำเป็น)</label>
+          <input id="swal-reg-name" class="swal2-input" placeholder="เช่น แม่พอใจ" type="text" autocomplete="name" />
+        </div>
+        <div class="ms-field">
+          <label for="swal-reg-password">รหัสผ่าน</label>
+          <input id="swal-reg-password" class="swal2-input" placeholder="อย่างน้อย 6 ตัวอักษร และมีพิมพ์ใหญ่ 1 ตัว" type="password" autocomplete="new-password" />
+          <span id="toggle-reg-pass" class="eye-icon">👁️</span>
+        </div>
+        <div class="ms-field">
+          <label for="swal-reg-confirm">ยืนยันรหัสผ่าน</label>
+          <input id="swal-reg-confirm" class="swal2-input" placeholder="พิมพ์ซ้ำอีกครั้ง" type="password" autocomplete="new-password" />
+          <span id="toggle-reg-confirm" class="eye-icon">👁️</span>
+        </div>
+        <div class="ms-field" >
+          <label for="swal-reg-education">ระดับการศึกษา</label>
+          <select id="swal-reg-education" class="swal2-input">
+            <option value="">เลือกระดับการศึกษา</option>
+            <option value="NONE">ไม่เคยเรียนเลย</option>
+            <option value="PRIMARY">ประถมศึกษา</option>
+            <option value="SECONDARY">มัธยมต้น</option>
+            <option value="HIGH_SCHOOL">มัธยมปลาย</option>
+            <option value="VOCATIONAL">ปวช./ปวส.</option>
+            <option value="BACHELOR">ปริญญาตรี</option>
+            <option value="MASTER">ปริญญาโท</option>
+            <option value="DOCTORATE">ปริญญาเอก</option>
+            <option value="OTHER">อื่นๆ</option>
+          </select>
+        </div>
+        <div class="ms-field hidden">
+          <label for="swal-reg-birthday">วันเกิด</label>
+          <input id="swal-reg-birthday" class="swal2-input" type="date" />
+        </div>
+        <div class="ms-field">
+          <label for="swal-reg-antenatal-visits">จำนวนครั้งการฝากครรภ์</label>
+          <input id="swal-reg-antenatal-visits" class="swal2-input" placeholder="จำนวนครั้งการฝากครรภ์" type="number" />
+        </div>
+      </form>
     `,
+    didOpen: () => {
+      const titleEl = Swal.getTitle();
+      if (titleEl) titleEl.style.color = "#F0A4D6";
+
+      const pass = document.getElementById("swal-reg-password");
+      const confirm = document.getElementById("swal-reg-confirm");
+      const togglePass = document.getElementById("toggle-reg-pass");
+      const toggleConfirm = document.getElementById("toggle-reg-confirm");
+
+      const toggle = (input, icon) => {
+        const show = input.type === "password";
+        input.type = show ? "text" : "password";
+        icon.textContent = show ? "🙈" : "👁️";
+      };
+
+      togglePass?.addEventListener("click", () => toggle(pass, togglePass));
+      toggleConfirm?.addEventListener("click", () => toggle(confirm, toggleConfirm));
+    },
     focusConfirm: false,
     showCancelButton: true,
     confirmButtonText: confirmText,
     cancelButtonText: cancelText,
-    confirmButtonColor: "#F5D8EB",
+    confirmButtonColor: "#D884E6",
+    showCloseButton: true,
     reverseButtons: true,
+    allowEscapeKey: true,
     allowOutsideClick: () => !Swal.isLoading(),
-    didOpen: () => {
-      const titleEl = Swal.getTitle();
-      if (titleEl) titleEl.style.color = "#F0A4D6";
-    },
     preConfirm: () => {
-      const firstName = /** @type {HTMLInputElement} */ (document.getElementById("swal-reg-firstname"))?.value?.trim();
-      const lastName = /** @type {HTMLInputElement} */ (document.getElementById("swal-reg-lastname"))?.value?.trim();
-      const password = /** @type {HTMLInputElement} */ (document.getElementById("swal-reg-password"))?.value ?? "";
+      const username = document.getElementById("swal-reg-username")?.value?.trim();
+      const nameInput = document.getElementById("swal-reg-name")?.value?.trim();
+      const password = document.getElementById("swal-reg-password")?.value ?? "";
+      const confirmPassword = document.getElementById("swal-reg-confirm")?.value ?? "";
+      const educationLevel = document.getElementById("swal-reg-education")?.value;
+      const birthday = document.getElementById("swal-reg-birthday")?.value;
+      const antenatal_visit_counts = document.getElementById("swal-reg-antenatal-visits")?.value;
 
-      if (!firstName || !lastName || !password) {
-        Swal.showValidationMessage("กรอกข้อมูลให้ครบถ้วน");
+
+      if (!username || !password || !confirmPassword || !nameInput  || !educationLevel || !antenatal_visit_counts) {
+        Swal.showValidationMessage("กรุณากรอกข้อมูลให้ครบถ้วน");
         return false;
       }
+
       if (password.length < 6) {
         Swal.showValidationMessage("รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร");
         return false;
       }
-      return { firstName, lastName, password };
+
+      if (!/[A-Z]/.test(password)) {
+        Swal.showValidationMessage("รหัสผ่านต้องมีตัวอักษรพิมพ์ใหญ่ (A–Z) อย่างน้อย 1 ตัว");
+        return false;
+      }
+
+      if (password !== confirmPassword) {
+        Swal.showValidationMessage("รหัสผ่านและยืนยันรหัสผ่านไม่ตรงกัน");
+        return false;
+      }
+
+      const name = nameInput && nameInput.length > 0 ? nameInput : username;
+      return { username, name, password, confirmPassword, educationLevel, birthday, antenatal_visit_counts: Number(antenatal_visit_counts) };
     },
   });
 
-  if (result.isConfirmed && result.value) {
-    return result.value;
-  }
+  if (result.isConfirmed && result.value) return result.value;
   return null;
 }

@@ -7,7 +7,7 @@ export const Posture = () => {
        {/* ปุ่ม: ท่านวดเต้านมด้วยตนเอง */}
           <div className=" relative w-full flex justify-center items-center">
             <img
-              className="absolute right-[-20px] w-[70px] h-[70px] rotate-[15deg]"
+              className="absolute right-[-20px] w-[70px] h-[70px] rotate-[15deg] xs:w-[50px]"
               src="/src/assets/knowledge/hearth.png"
               alt="heart"
             />

@@ -4,7 +4,7 @@ import { MainLayout } from "../layouts/MainLayout.jsx";
 import { Home } from "../pages/Home.jsx";
 import Knowledge from "../pages/Knowledge.jsx";
 import Food from "../pages/Food.jsx";
-import { Save } from "../pages/Save.jsx";
+import {Save}  from "../pages/Save.jsx";
 import BabyHealth from "../pages/BabyHealth.jsx";
 import Contact from "../pages/Contact.jsx";
 import FourStep from "../pages/FourStep.jsx";
@@ -14,6 +14,11 @@ import Weight from "../pages/Weight.jsx";
 import SucklingBreasts from "../pages/SucklingBreasts.jsx";
 import { Poop } from "../pages/Poop.jsx";
 import Urine from "../pages/Urine.jsx";
+import Unauthorized from "../pages/Unauthorized.jsx";
+import RequireAuth from "../components/RequireAuth.jsx";
+import Profile from "../pages/Profile.jsx";
+import EditProfile from "../pages/EditProfile.jsx";
+import BabySign from "../pages/BabySign.jsx";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -36,12 +41,20 @@ const router = createBrowserRouter([
       },
       {
         path: "/save",
-        element: <Save />,
+        element: (
+          <RequireAuth Fallback={Unauthorized}>
+            <Save/>
+          </RequireAuth>
+        ),
         handle: { title: "บันทึก", backTo: "/" },
       },
       {
         path: "/baby-health",
-        element: <BabyHealth />,
+        element: (
+          <RequireAuth Fallback={Unauthorized}>
+            <BabyHealth />
+          </RequireAuth>
+        ),
         handle: { title: "Baby Health", backTo: "/" },
       },
       {
@@ -60,30 +73,86 @@ const router = createBrowserRouter([
         handle: { title: "ความรู้", backTo: "/knowledge" },
       },
       {
+        path: "/baby-sign",
+        element: <BabySign />,
+        handle: { title: "ความรู้", backTo: "/knowledge" },
+      },
+      {
         path: "/posture",
         element: <Posture />,
         handle: { title: "ความรู้", backTo: "/knowledge" },
       },
       {
         path: "/poop",
-        element: <Poop />,
+        element: (
+          <RequireAuth Fallback={Unauthorized}>
+            <Poop />
+          </RequireAuth>
+        ),
         handle: { title: "Baby Health", backTo: "/baby-health" },
       },
       {
         path: "/urine",
-        element: <Urine />,
+        element: (
+          <RequireAuth Fallback={Unauthorized}>
+            <Urine />
+          </RequireAuth>
+        ),
         handle: { title: "Baby Health", backTo: "/baby-health" },
       },
+      
       {
         path: "/weight",
-        element: <Weight />,
+        element: (
+          <RequireAuth Fallback={Unauthorized}>
+            <Weight />
+          </RequireAuth>
+        ),
         handle: { title: "Baby Health", backTo: "/baby-health" },
       },
       {
         path: "/suckingBreasts",
-        element: <SucklingBreasts />,
+        element: (
+          <RequireAuth Fallback={Unauthorized}>
+            <SucklingBreasts />
+          </RequireAuth>
+        ),
         handle: { title: "Baby Health", backTo: "/baby-health" },
       },
+      {
+        path: "/unauthorized",
+        element: <Unauthorized />,
+        handle: { title: "ไม่มีสิทธิ์เข้าถึง", backTo: "/" },
+      },
+            {
+        path: "/profile",
+        element: (
+          <RequireAuth Fallback={Unauthorized}>
+            <Profile />
+          </RequireAuth>
+        ),
+        handle: { title: "Profile", backTo: "/" },
+      },
+      {
+        path: "/unauthorized",
+        element: <Unauthorized />,
+        handle: { title: "ไม่มีสิทธิ์เข้าถึง", backTo: "/" },
+      },
+                  {
+        path: "/edit-profile/:id",
+        element: (
+          <RequireAuth Fallback={Unauthorized}>
+            <EditProfile />
+          </RequireAuth>
+        ),
+        handle: { title: "Edit Profile", backTo: "/profile" },
+      },
+      {
+        path: "/unauthorized",
+        element: <Unauthorized />,
+        handle: { title: "ไม่มีสิทธิ์เข้าถึง", backTo: "/" },
+      },
+    
     ],
   },
 ]);

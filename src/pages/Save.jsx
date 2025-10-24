@@ -158,11 +158,22 @@ export const Save = () => {
           <CiCircleAlert className="w-[30px] h-[30px]" /> เช็คท่าอุ้มก่อนนะคะ 😊
         </button>
       </div>
+<div className="absolute  flex items-center justify-center">
 
+  <div className="absolute -top-85 left-30 text-2xl text-[#e3a9f1d7]">straight</div>
+  <div className="absolute bottom-25 left-30 text-2xl text-[#e3a9f1d7]">face</div>
+  <div className="absolute -top-85 right-30 text-2xl text-[#e3a9f1d7]">close</div>
+  <div className="absolute bottom-25 right-30 text-2xl text-[#e3a9f1d7]">support</div>
+
+  {/* เนื้อหาตรงกลาง */}
+  {/* <YourCenterContentHere /> */}
+
+      </div>
       {/* รูปภาพ */}
       <div className="rounded-full bg-[#E2A9F1] w-[200px] h-[200px] flex items-center justify-center mt-4 shadow-md">
         <img src="/src/assets/save/breastfeeding.png" className="w-[144px] h-[144px]" />
       </div>
+
 
       <h1 className="text-[30px] font-medium mt-6 text-[#6C3B73]">บันทึกการดูดนม</h1>
 

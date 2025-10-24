@@ -251,7 +251,7 @@ const SucklingBreasts = () => {
       {/* ปุ่มบันทึกเพิ่มเติม */}
       <Link to={"/save"} className="w-full">
         <button className="btn w-full text-sm sm:text-base rounded-xl bg-gradient-to-r from-[#F5D8EB] to-[#F8CFE5] hover:from-[#f782c0] hover:to-[#ff6bbf] text-[#6C3B73] font-semibold shadow-md transition-all hover:scale-105 py-3 sm:py-4">
-          🍼 บันทึกการปั๊มนมเพิ่มเติม
+          บันทึกการปั๊มนมเพิ่มเติม
         </button>
       </Link>
 

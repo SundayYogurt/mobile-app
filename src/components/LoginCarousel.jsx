@@ -403,7 +403,10 @@ export default function LoginCarousel() {
               <img src={slides[index].icon} className="w-[75px]" alt="baby icon" />
             </motion.div>
           </AnimatePresence>
+          
         </div>
+                    <p className="text-xs text-gray-400 mt-3">
+        (ปัดซ้าย/ขวาเพื่อเปลี่ยนสไลด์)</p>
 
         {user && slides[index].type === "baby" ? (
           <motion.div
@@ -413,8 +416,7 @@ export default function LoginCarousel() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
           >
-            <p className="text-xs text-gray-400 mt-3">
-        (ปัดซ้าย/ขวาเพื่อเปลี่ยนสไลด์)</p>
+
             {slides[index].subtitle ? (
               
               <div className="text-sm text-gray-500">{slides[index].subtitle}</div>
